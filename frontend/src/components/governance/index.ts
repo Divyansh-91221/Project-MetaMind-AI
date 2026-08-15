@@ -1,0 +1,1 @@
+export { GovernancePanel } from './GovernancePanel';
