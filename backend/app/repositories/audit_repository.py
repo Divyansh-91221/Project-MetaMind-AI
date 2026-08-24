@@ -51,6 +51,7 @@ class AuditRepository:
         self,
         *,
         action: AuditAction | None = None,
+        actions: list[AuditAction] | None = None,
         entity_urn: str | None = None,
         limit: int = 100,
         offset: int = 0,
@@ -58,6 +59,8 @@ class AuditRepository:
         stmt = select(AuditEvent).order_by(AuditEvent.occurred_at.desc())
         if action is not None:
             stmt = stmt.where(AuditEvent.action == action)
+        elif actions:
+            stmt = stmt.where(AuditEvent.action.in_(actions))
         if entity_urn:
             stmt = stmt.where(AuditEvent.entity_urn == entity_urn)
         stmt = stmt.limit(limit).offset(offset)

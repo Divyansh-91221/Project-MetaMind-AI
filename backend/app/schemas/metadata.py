@@ -129,3 +129,14 @@ class IngestionResult(APIModel):
     started_at: datetime
     completed_at: datetime
     duration_seconds: float = 0.0
+
+
+class HealthScoreBreakdown(APIModel):
+    """Deterministic 0-100 asset health score with its contributing components."""
+
+    entity_urn: str
+    total: int = Field(ge=0, le=100)
+    label: str
+    components: dict[str, int] = Field(default_factory=dict)
+    weights: dict[str, float] = Field(default_factory=dict)
+

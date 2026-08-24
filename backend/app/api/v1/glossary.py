@@ -52,7 +52,9 @@ async def assign_term(
 ) -> OperationResult:
     principal.require(Permission.GOVERNANCE_WRITE)
     await GlossaryService(session).assign_term(payload)
-    return OperationResult(message=f"'{payload.term_name}' linked to {payload.entity_urn}.", affected=1)
+    return OperationResult(
+        message=f"'{payload.term_name}' linked to {payload.entity_urn}.", affected=1
+    )
 
 
 @router.get("/search", response_model=list[BusinessTermRead], summary="Search the glossary")

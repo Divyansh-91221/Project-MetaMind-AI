@@ -25,13 +25,25 @@ class EvidenceItem(APIModel):
     makes answers auditable and prevents the model from inventing lineage.
     """
 
-    kind: Literal["entity", "lineage", "impact", "document", "glossary", "governance", "quality"]
+    kind: Literal[
+        "entity",
+        "lineage",
+        "impact",
+        "document",
+        "glossary",
+        "governance",
+        "quality",
+        "constraint",
+    ]
     title: str
     detail: str = ""
     urn: str | None = None
     source: str = ""
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
     inferred: bool = False
+    constraint_type: str | None = None
+    constraint_name: str | None = None
+    constraint_columns: list[str] = Field(default_factory=list)
     payload: dict[str, Any] = Field(default_factory=dict)
 
 

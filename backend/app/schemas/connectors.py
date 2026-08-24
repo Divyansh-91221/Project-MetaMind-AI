@@ -56,3 +56,28 @@ class ConnectionTestResult(APIModel):
     success: bool
     message: str = ""
     latency_ms: float = 0.0
+
+
+class IngestionRunRead(APIModel):
+    """One ingestion run, assembled from its audit trail events."""
+
+    run_id: str
+    connector: str
+    status: str = "RUNNING"
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    assets_processed: int | None = None
+    lineage_edges: int | None = None
+    warnings: list[str] = Field(default_factory=list)
+
+
+class DemoResetResult(APIModel):
+    """Outcome of a demo-data reset - reuses the ingestion, graph and index jobs."""
+
+    success: bool
+    entities_created: int = 0
+    entities_updated: int = 0
+    lineage_edges_created: int = 0
+    lineage_edges_updated: int = 0
+    graph: str = ""
+    index: str = ""

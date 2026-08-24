@@ -63,7 +63,7 @@ class IngestionScheduler:
 
             try:
                 await self.run_once()
-            except Exception as exc:  # noqa: BLE001 - the loop must survive any failure
+            except Exception as exc:
                 logger.error("scheduled_ingestion_failed", extra={"error": str(exc)})
 
     async def run_once(self) -> int:

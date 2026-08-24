@@ -21,7 +21,6 @@ from typing import TYPE_CHECKING, Any
 from sqlalchemy import (
     Boolean,
     DateTime,
-    Enum as SAEnum,
     ForeignKey,
     Index,
     Integer,
@@ -29,7 +28,11 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
+from sqlalchemy import (
+    Enum as SAEnum,
+)
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.constants import EntityType, PlatformType
@@ -60,7 +63,9 @@ class DataSource(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     config: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     secret_ref: Mapped[str | None] = mapped_column(String(255), nullable=True)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    last_ingested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_ingested_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     last_ingestion_status: Mapped[str | None] = mapped_column(String(32), nullable=True)
 
     entities: Mapped[list[MetadataEntity]] = relationship(

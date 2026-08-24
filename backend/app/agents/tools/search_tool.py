@@ -24,7 +24,9 @@ class SearchTool(Tool):
         super().__init__(session)
         self.service = SearchService(session)
 
-    async def run(self, *, query: str, limit: int = 8, **_: Any) -> ToolResult:
+    async def run(  # type: ignore[override]
+        self, *, query: str, limit: int = 8, **_: Any
+    ) -> ToolResult:
         response = await self.service.search(
             SearchRequest(q=query, mode=SearchMode.HYBRID, limit=limit)
         )
@@ -60,7 +62,10 @@ class SearchTool(Tool):
         )
 
         return ToolResult(
-            summary=f"{len(response.hits)} asset(s) and {len(retrieval.documents)} document(s) matched.",
+            summary=(
+                f"{len(response.hits)} asset(s) and "
+                f"{len(retrieval.documents)} document(s) matched."
+            ),
             evidence=evidence,
             data={"hits": [hit.model_dump(mode="json") for hit in response.hits]},
             warnings=[] if evidence else [f"Nothing in the catalog matched '{query}'."],

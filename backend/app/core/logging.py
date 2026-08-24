@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import sys
+from collections.abc import Mapping
 from contextvars import ContextVar
 from datetime import UTC, datetime
 from typing import Any
@@ -24,6 +25,41 @@ _RESERVED = frozenset(logging.LogRecord("", 0, "", 0, "", (), None).__dict__) | 
     "asctime",
     "taskName",
 }
+
+
+class _SafeLogger(logging.Logger):
+    """Logger that cannot be crashed by a structured-logging field name.
+
+    ``logging`` raises ``KeyError`` if ``extra`` contains a reserved ``LogRecord`` attribute
+    such as ``created``, ``name`` or ``module``. Structured log calls use domain vocabulary
+    and will collide sooner or later, so colliding keys are prefixed rather than allowed to
+    abort the caller.
+    """
+
+    def makeRecord(  # noqa: N802 - overrides a stdlib method name
+        self,
+        name: str,
+        level: int,
+        fn: str,
+        lno: int,
+        msg: object,
+        args: object,
+        exc_info: object,
+        func: str | None = None,
+        extra: Mapping[str, object] | None = None,
+        sinfo: str | None = None,
+    ) -> logging.LogRecord:
+        if extra:
+            extra = {
+                (f"ctx_{key}" if key in _RESERVED else key): value for key, value in extra.items()
+            }
+        return super().makeRecord(
+            name, level, fn, lno, msg, args, exc_info, func, extra, sinfo  # type: ignore[arg-type]
+        )
+
+
+# Installed at import time so every `get_logger()` call receives the safe class.
+logging.setLoggerClass(_SafeLogger)
 
 
 def set_request_context(request_id: str | None = None, principal: str | None = None) -> None:

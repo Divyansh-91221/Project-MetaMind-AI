@@ -6,7 +6,6 @@ swapped for in-memory/deterministic implementations here.
 
 from __future__ import annotations
 
-import asyncio
 import os
 import sys
 from collections.abc import AsyncIterator, Iterator
@@ -30,13 +29,6 @@ from app.ai.llm import MockLLMProvider, set_llm_provider  # noqa: E402
 from app.graph.base import InMemoryGraphStore  # noqa: E402
 from app.graph.neo4j_client import set_graph_store  # noqa: E402
 from app.rag.embeddings import HashEmbeddingProvider, set_embedding_provider  # noqa: E402
-
-
-@pytest.fixture(scope="session")
-def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest.fixture

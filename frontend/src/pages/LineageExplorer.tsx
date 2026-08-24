@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeftRight, Bot, Gauge, GitBranch, SearchCheck, ShieldCheck } from 'lucide-react';
 import { useApi } from '@/hooks';
 import { lineageApi } from '@/services/lineageApi';
-import { AsyncBoundary, Card, EmptyState, PageHeader, SearchBar } from '@/components/common';
+import { AsyncBoundary, Badge, Card, EmptyState, PageHeader, SearchBar } from '@/components/common';
 import { LineageGraphView, LineageLegend } from '@/components/lineage';
 import type { Direction, LineageLevel } from '@/types';
 
@@ -29,6 +30,25 @@ export function LineageExplorer() {
     return lineageApi.both(urn, options);
   }, [urn, direction, depth, level, includeInferred]);
 
+  const summary = useMemo(() => {
+    if (!graph.data) {
+      return {
+        nodes: 0,
+        edges: 0,
+        inferred: 0,
+        verified: 0,
+      };
+    }
+    const inferred = graph.data.edges.filter((edge) => edge.method === 'AI_INFERRED').length;
+    const verified = graph.data.edges.filter((edge) => edge.verified).length;
+    return {
+      nodes: graph.data.nodes.length,
+      edges: graph.data.edges.length,
+      inferred,
+      verified,
+    };
+  }, [graph.data]);
+
   if (!urn) {
     return (
       <>
@@ -51,20 +71,58 @@ export function LineageExplorer() {
     <>
       <PageHeader
         title="Lineage Explorer"
-        description={urn}
+        description={`Trace path for ${urn}`}
         actions={
-          <button
-            type="button"
-            className="button"
-            onClick={() => navigate(`/impact?urn=${encodeURIComponent(urn)}`)}
-          >
-            Run impact analysis
-          </button>
+          <div className="row">
+            <button
+              type="button"
+              className="button"
+              onClick={() => navigate(`/impact?urn=${encodeURIComponent(urn)}`)}
+            >
+              Run impact analysis
+            </button>
+            <button
+              type="button"
+              className="button primary"
+              onClick={() => navigate(`/copilot?urn=${encodeURIComponent(urn)}`)}
+            >
+              <Bot size={14} /> Ask Copilot
+            </button>
+          </div>
         }
       />
 
-      <Card>
-        <div className="row">
+      <div className="lineage-metrics-grid">
+        <div className="metric-panel">
+          <span className="metric-head"><SearchCheck size={15} /> Nodes</span>
+          <strong>{summary.nodes}</strong>
+          <span className="faint small">Distinct assets in traversal scope</span>
+        </div>
+        <div className="metric-panel">
+          <span className="metric-head"><GitBranch size={15} /> Relationships</span>
+          <strong>{summary.edges}</strong>
+          <span className="faint small">Resolved lineage edges for current query</span>
+        </div>
+        <div className="metric-panel">
+          <span className="metric-head"><Gauge size={15} /> Verified</span>
+          <strong>{summary.verified}</strong>
+          <span className="faint small">Human-confirmed lineage relations</span>
+        </div>
+        <div className="metric-panel">
+          <span className="metric-head"><ShieldCheck size={15} /> AI-inferred</span>
+          <strong>{summary.inferred}</strong>
+          <span className="faint small">Requires stewardship review</span>
+        </div>
+      </div>
+
+      <Card className="lineage-controls-card">
+        <div className="row" style={{ justifyContent: 'space-between' }}>
+          <span className="metric-head"><ArrowLeftRight size={14} /> Search and traversal controls</span>
+          <Badge tone={includeInferred ? 'inferred' : 'ok'}>
+            {includeInferred ? 'Includes inferred' : 'Verified only'}
+          </Badge>
+        </div>
+        <div className="row" style={{ marginTop: 8 }}>
           <SearchBar onSelect={(hit) => setParams({ urn: hit.urn })} placeholder="Trace another asset..." />
         </div>
         <div className="row" style={{ marginTop: 12 }}>
@@ -117,7 +175,7 @@ export function LineageExplorer() {
         </div>
       </Card>
 
-      <Card title="Lineage graph">
+      <Card title="Lineage graph" className="lineage-graph-card">
         <AsyncBoundary {...graph} onRetry={graph.reload} emptyTitle="No lineage found.">
           {(data) =>
             data && (

@@ -22,7 +22,9 @@ class QualityTool(Tool):
         super().__init__(session)
         self.service = QualityService(session)
 
-    async def run(self, *, urn: str, explain: bool = True, **_: Any) -> ToolResult:
+    async def run(  # type: ignore[override]
+        self, *, urn: str, explain: bool = True, **_: Any
+    ) -> ToolResult:
         try:
             profile = await self.service.get_profile(urn)
         except NotFoundError as exc:
@@ -61,7 +63,8 @@ class QualityTool(Tool):
                     detail=(
                         f"Value {metric.value} {metric.unit or ''}".strip()
                         + (f", threshold {metric.threshold}" if metric.threshold else "")
-                        + f", status {metric.status.value}, measured at {metric.measured_at:%Y-%m-%d %H:%M} UTC."
+                        + f", status {metric.status.value}"
+                        + f", measured at {metric.measured_at:%Y-%m-%d %H:%M} UTC."
                     ),
                     urn=urn,
                     source=metric.source or "quality metrics",
@@ -92,7 +95,8 @@ class QualityTool(Tool):
                             kind="quality",
                             title=f"Stale upstream: {upstream['name']}",
                             detail=(
-                                f"Status {upstream['status']}, {upstream['distance']} hop(s) upstream"
+                                f"Status {upstream['status']}, "
+                                f"{upstream['distance']} hop(s) upstream"
                                 + (f". {upstream['reason']}" if upstream.get("reason") else ".")
                             ),
                             urn=str(upstream["urn"]),

@@ -157,7 +157,7 @@ async def seed(*, reset_graph: bool = False) -> None:
             logger.info("rebuilding_graph_projection")
             stats = await LineageService(session).rebuild_graph(principal=PRINCIPAL)
             logger.info("graph_rebuilt", extra=stats)
-        except Exception as exc:  # noqa: BLE001 - the graph is optional for seeding
+        except Exception as exc:
             logger.warning("graph_rebuild_skipped", extra={"error": str(exc)})
 
     async with session_scope() as session:
@@ -168,18 +168,18 @@ async def seed(*, reset_graph: bool = False) -> None:
     if reset_graph:
         logger.info("reset_graph_requested_and_completed")
 
-    print("\nDemo data loaded.\n")  # noqa: T201 - CLI feedback
-    print("Try:")  # noqa: T201
-    print("  curl 'http://localhost:8000/api/v1/search?q=monthly+revenue'")  # noqa: T201
+    print("\nDemo data loaded.\n")
+    print("Try:")
+    print("  curl 'http://localhost:8000/api/v1/search?q=monthly+revenue'")
     print(
         "  curl 'http://localhost:8000/api/v1/lineage/"
         "urn:emc:column:snowflake:snowflake.sales.total_revenue/upstream?depth=5'"
-    )  # noqa: T201
+    )
     print(
         "  curl -X POST http://localhost:8000/api/v1/copilot/chat "
-        '-H \'Content-Type: application/json\' '
+        "-H 'Content-Type: application/json' "
         '-d \'{"message":"What will break if customer_id changes?"}\''
-    )  # noqa: T201
+    )
 
 
 def main() -> None:

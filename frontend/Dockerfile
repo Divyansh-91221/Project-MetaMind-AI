@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM node:20-alpine
+# Node 22: Vite 8 requires ^20.19 || >=22.12.
+FROM node:22-alpine
 
 WORKDIR /app
 

@@ -183,6 +183,29 @@ export interface SearchResponse {
   took_ms: number;
 }
 
+export interface RetrievalDocument {
+  chunk_id: string;
+  document_title: string;
+  document_type: string;
+  content: string;
+  score: number;
+  entity_urn?: string | null;
+  source_uri?: string | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface RetrievalResponse {
+  query: string;
+  documents: RetrievalDocument[];
+  entities: SearchHit[];
+}
+
+export interface SearchIndexReport {
+  documents_indexed: number;
+  chunks_indexed: number;
+  skipped_unchanged: number;
+}
+
 export interface GovernanceProfile {
   entity_urn: string;
   entity_name: string;
@@ -232,6 +255,8 @@ export interface QualityProfile {
   entity_name: string;
   overall_status: QualityStatus;
   freshness?: {
+    last_updated_at?: string | null;
+    last_successful_run_at?: string | null;
     age_hours?: number | null;
     is_stale: boolean;
     status: QualityStatus;
@@ -250,13 +275,24 @@ export interface QualityProfile {
 }
 
 export interface EvidenceItem {
-  kind: 'entity' | 'lineage' | 'impact' | 'document' | 'glossary' | 'governance' | 'quality';
+  kind:
+    | 'entity'
+    | 'lineage'
+    | 'impact'
+    | 'document'
+    | 'glossary'
+    | 'governance'
+    | 'quality'
+    | 'constraint';
   title: string;
   detail: string;
   urn?: string | null;
   source: string;
   confidence: number;
   inferred: boolean;
+  constraint_type?: string | null;
+  constraint_name?: string | null;
+  constraint_columns?: string[];
   payload: Record<string, unknown>;
 }
 
@@ -294,6 +330,10 @@ export interface ChatMessage {
   evidence?: EvidenceItem[];
   warnings?: string[];
   followups?: string[];
+  intent?: string;
+  toolCalls?: ToolCallTrace[];
+  resolvedEntities?: CopilotResponse['resolved_entities'];
+  tookMs?: number;
 }
 
 export interface CatalogSummary {
@@ -317,3 +357,130 @@ export interface ConnectorDescriptor {
   implemented: boolean;
   required_config: string[];
 }
+
+export interface DataSourceRead {
+  id: string;
+  name: string;
+  connector_type: string;
+  platform: string;
+  description?: string | null;
+  enabled: boolean;
+  last_ingested_at?: string | null;
+  last_ingestion_status?: string | null;
+  created_at: string;
+}
+
+export interface IngestionRun {
+  run_id: string;
+  connector: string;
+  status: 'RUNNING' | 'SUCCESS' | 'PARTIAL' | 'FAILED';
+  started_at?: string | null;
+  completed_at?: string | null;
+  assets_processed?: number | null;
+  lineage_edges?: number | null;
+  warnings: string[];
+}
+
+export interface DemoResetResult {
+  success: boolean;
+  entities_created: number;
+  entities_updated: number;
+  lineage_edges_created: number;
+  lineage_edges_updated: number;
+  graph: string;
+  index: string;
+}
+
+export interface HealthScoreBreakdown {
+  entity_urn: string;
+  total: number;
+  label: string;
+  components: Record<string, number>;
+  weights: Record<string, number>;
+}
+
+export type TrustStatusTone = 'HEALTHY' | 'WARNING' | 'CRITICAL' | 'PENDING_REVIEW' | 'UNKNOWN';
+
+export interface TrustDimension {
+  key: string;
+  label: string;
+  score: number;
+  status: TrustStatusTone;
+  reason: string;
+  evidence: string[];
+}
+
+export interface TrustIssue {
+  code: string;
+  severity: 'WARNING' | 'CRITICAL';
+  title: string;
+  detail: string;
+  target_page: 'quality' | 'impact' | 'governance' | 'lineage' | 'asset';
+  target_url: string;
+}
+
+export interface SensitiveFieldDetection {
+  assignment_id: string;
+  entity_urn: string;
+  qualified_name: string;
+  column_name?: string | null;
+  classification: string;
+  confidence?: number | null;
+  detection_source?: string | null;
+  review_status: 'CONFIRMED' | 'PENDING_REVIEW';
+  evidence: Record<string, unknown>;
+}
+
+export interface AssetTrustSummary {
+  fallback_mode?: boolean;
+  data_source?: 'trust_api' | 'fallback';
+  entity_urn: string;
+  asset_name: string;
+  platform: string;
+  asset_type: string;
+  description?: string | null;
+  owner?: string | null;
+  last_updated_at?: string | null;
+  trust_score: number;
+  trust_status: string;
+  dimensions: TrustDimension[];
+  reliability: {
+    freshness_status: string;
+    freshness_last_updated_at?: string | null;
+    freshness_age_hours?: number | null;
+    freshness_expected_interval_hours?: number | null;
+    is_stale: boolean;
+    freshness_failure_reason?: string | null;
+    quality_score: number;
+    quality_warning_count: number;
+    completeness?: number | null;
+    validity?: number | null;
+    null_rate?: number | null;
+    anomaly_count?: number | null;
+  };
+  dependency_risk: {
+    upstream_asset_count: number;
+    downstream_asset_count: number;
+    critical_downstream_consumers: number;
+    dashboards_affected: number;
+    reports_affected: number;
+    dependency_risk_level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    reason: string;
+    unverified_dependency_count: number;
+    inferred_path_count: number;
+  };
+  sensitive_data: SensitiveFieldDetection[];
+  ownership: {
+    owner?: string | null;
+    steward?: string | null;
+    status: 'ASSIGNED' | 'UNOWNED';
+    team?: string | null;
+    warning?: string | null;
+  };
+  issues: TrustIssue[];
+  explanation: {
+    positives: string[];
+    negatives: string[];
+  };
+}
+

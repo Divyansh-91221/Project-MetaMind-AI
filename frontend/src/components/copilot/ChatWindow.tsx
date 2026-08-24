@@ -19,7 +19,13 @@ const FALLBACK_EXAMPLES = [
  * `contextUrn` is the asset the user navigated from; sending it lets the agent resolve
  * "this table" without guessing.
  */
-export function ChatWindow({ contextUrn }: { contextUrn?: string | null }) {
+export function ChatWindow({
+  contextUrn,
+  initialPrompt,
+}: {
+  contextUrn?: string | null;
+  initialPrompt?: string | null;
+}) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -29,6 +35,7 @@ export function ChatWindow({ contextUrn }: { contextUrn?: string | null }) {
   const [examples, setExamples] = useState<string[]>(FALLBACK_EXAMPLES);
   const [followups, setFollowups] = useState<string[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
+  const promptedRef = useRef(false);
 
   useEffect(() => {
     copilotApi.examples().then(setExamples).catch(() => setExamples(FALLBACK_EXAMPLES));
@@ -65,6 +72,10 @@ export function ChatWindow({ contextUrn }: { contextUrn?: string | null }) {
           content: response.answer,
           evidence: response.evidence,
           warnings: response.warnings,
+          intent: response.intent,
+          toolCalls: response.tool_calls,
+          resolvedEntities: response.resolved_entities,
+          tookMs: response.took_ms,
         },
       ]);
     } catch (error) {
@@ -81,6 +92,14 @@ export function ChatWindow({ contextUrn }: { contextUrn?: string | null }) {
       setSending(false);
     }
   };
+
+  useEffect(() => {
+    if (!initialPrompt || promptedRef.current) return;
+    promptedRef.current = true;
+    void send(initialPrompt);
+    // only auto-send the first prompt once for this mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialPrompt]);
 
   const suggestions = followups.length > 0 ? followups : examples.slice(0, 5);
 

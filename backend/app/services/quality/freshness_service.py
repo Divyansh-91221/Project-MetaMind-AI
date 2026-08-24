@@ -61,9 +61,7 @@ class FreshnessService:
         status = (
             QualityStatus.FAIL
             if age > sla
-            else QualityStatus.WARN
-            if age > sla * 0.8
-            else QualityStatus.PASS
+            else QualityStatus.WARN if age > sla * 0.8 else QualityStatus.PASS
         )
         record = await self.repo.upsert_freshness(
             entity.id,

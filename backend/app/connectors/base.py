@@ -60,6 +60,7 @@ class RawEntity:
     is_nullable: bool | None = None
     is_primary_key: bool | None = None
     row_count: int | None = None
+    constraints: list[dict[str, Any]] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)
     properties: dict[str, Any] = field(default_factory=dict)
     owners: list[tuple[str, str]] = field(default_factory=list)

@@ -41,7 +41,9 @@ def build_qualified_name(*parts: str | None) -> str:
 def build_urn(entity_type: EntityType | str, platform: str, qualified_name: str) -> str:
     """Compose a canonical URN."""
     etype = entity_type.value if isinstance(entity_type, EntityType) else str(entity_type)
-    return f"{URN_PREFIX}:{etype.lower()}:{normalize_name(platform)}:{normalize_name(qualified_name)}"
+    return (
+        f"{URN_PREFIX}:{etype.lower()}:{normalize_name(platform)}:{normalize_name(qualified_name)}"
+    )
 
 
 def urn_to_uuid(urn: str) -> uuid.UUID:

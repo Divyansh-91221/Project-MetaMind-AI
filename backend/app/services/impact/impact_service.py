@@ -106,7 +106,10 @@ class ImpactService:
         )
 
         owners_to_notify = [
-            {"owner": owner, "assets": sorted({a.qualified_name for a in impacted if owner in a.owners})}
+            {
+                "owner": owner,
+                "assets": sorted({a.qualified_name for a in impacted if owner in a.owners}),
+            }
             for owner in sorted({owner for asset in impacted for owner in asset.owners})
         ]
 
@@ -140,7 +143,8 @@ class ImpactService:
             direct_dependencies=[graph_node_to_schema(node) for node in direct],
             transitive_dependencies=[graph_node_to_schema(node) for node in transitive],
             single_points_of_failure=[
-                graph_node_to_schema(node) for node in self.analyzer.single_points_of_failure(result)
+                graph_node_to_schema(node)
+                for node in self.analyzer.single_points_of_failure(result)
             ],
             unverified_dependency_count=unverified,
         )

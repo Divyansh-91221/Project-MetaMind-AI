@@ -77,18 +77,26 @@ def entity_to_graph_node(entity: MetadataEntity, depth: int = 0) -> GraphNode:
     )
 
 
-def edge_to_graph_edge(edge: LineageEdge) -> GraphEdge:
-    """Project a persisted lineage row onto a graph relationship."""
+def edge_to_graph_edge(
+    edge: LineageEdge, entity_by_id: dict[uuid.UUID, MetadataEntity]
+) -> GraphEdge:
+    """Project a persisted lineage row onto a graph relationship.
+
+    Endpoints are resolved from ``entity_by_id`` rather than the ORM relationships: a freshly
+    inserted edge has no loaded ``source``/``target``, and touching them would trigger a lazy
+    load that async SQLAlchemy cannot service.
+    """
+    pipeline = entity_by_id.get(edge.pipeline_id) if edge.pipeline_id else None
     return GraphEdge(
-        source_urn=edge.source.urn,
-        target_urn=edge.target.urn,
+        source_urn=entity_by_id[edge.source_id].urn,
+        target_urn=entity_by_id[edge.target_id].urn,
         relationship=edge.relationship_type,
         level=edge.level,
         method=edge.method,
         confidence=edge.confidence,
         verified=edge.verified,
         transformation=edge.transformation,
-        pipeline_urn=edge.pipeline.urn if edge.pipeline else None,
+        pipeline_urn=pipeline.urn if pipeline else None,
         observed_at=edge.observed_at,
         edge_id=str(edge.id),
     )
@@ -231,14 +239,33 @@ class LineageService:
         """Mirror persisted edges (and their endpoints) into the graph store."""
         if not edges:
             return
-        nodes: dict[str, GraphNode] = {}
+
+        ids: set[uuid.UUID] = set()
         for edge in edges:
-            for entity in (edge.source, edge.target):
-                nodes.setdefault(entity.urn, entity_to_graph_node(entity))
+            ids.update({edge.source_id, edge.target_id})
+            if edge.pipeline_id:
+                ids.add(edge.pipeline_id)
+        entity_by_id = {
+            entity.id: entity for entity in await self.metadata_repo.get_many_by_ids(sorted(ids))
+        }
+
+        missing = ids - set(entity_by_id)
+        if missing:
+            logger.warning("graph_projection_missing_entities", extra={"count": len(missing)})
+            edges = [
+                edge
+                for edge in edges
+                if edge.source_id in entity_by_id and edge.target_id in entity_by_id
+            ]
+
         try:
-            await self.graph.upsert_nodes(list(nodes.values()))
-            await self.graph.upsert_edges([edge_to_graph_edge(edge) for edge in edges])
-        except Exception as exc:  # noqa: BLE001 - the catalog write must still succeed
+            await self.graph.upsert_nodes(
+                [entity_to_graph_node(entity) for entity in entity_by_id.values()]
+            )
+            await self.graph.upsert_edges(
+                [edge_to_graph_edge(edge, entity_by_id) for edge in edges]
+            )
+        except Exception as exc:
             logger.error("graph_projection_failed", extra={"error": str(exc)})
 
     async def rebuild_graph(self, *, principal: str = "system") -> dict[str, int]:
@@ -250,13 +277,22 @@ class LineageService:
         entities, _ = await self.metadata_repo.list_entities(limit=100_000)
         await self.graph.upsert_nodes([entity_to_graph_node(entity) for entity in entities])
 
+        # Every entity is already loaded, so endpoints resolve without a lazy load.
+        entity_by_id = {entity.id: entity for entity in entities}
+
         edges = await self.lineage_repo.list_all()
-        await self.graph.upsert_edges([edge_to_graph_edge(edge) for edge in edges])
+        await self.graph.upsert_edges(
+            [
+                edge_to_graph_edge(edge, entity_by_id)
+                for edge in edges
+                if edge.source_id in entity_by_id and edge.target_id in entity_by_id
+            ]
+        )
 
         # Structural containment (table -> column) makes column drill-down possible.
         containment = [
             GraphEdge(
-                source_urn=entity.parent.urn,
+                source_urn=entity_by_id[entity.parent_id].urn,
                 target_urn=entity.urn,
                 relationship=RelationshipType.CONTAINS,
                 level=LineageLevel.TABLE,
@@ -265,7 +301,7 @@ class LineageService:
                 verified=True,
             )
             for entity in entities
-            if entity.parent_id is not None and entity.parent is not None
+            if entity.parent_id is not None and entity.parent_id in entity_by_id
         ]
         await self.graph.upsert_edges(containment)
 

@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.connectors.base import RawEntity
-from app.core.constants import AuditAction, EntityType
+from app.core.constants import AuditAction, EntityType, LineageMethod, QualityStatus
 from app.core.exceptions import NotFoundError
 from app.core.logging import get_logger
 from app.models.metadata import MetadataEntity
@@ -21,11 +21,13 @@ from app.repositories.quality_repository import QualityRepository
 from app.schemas.common import Page
 from app.schemas.metadata import (
     ColumnSummary,
+    HealthScoreBreakdown,
     MetadataEntityDetail,
     MetadataEntityRead,
     MetadataEntityUpdate,
     MetadataFilter,
 )
+from app.services.metadata.health_score import compute_health_score
 from app.services.metadata.metadata_normalizer import metadata_normalizer
 from app.utils.timestamps import age_hours
 
@@ -86,7 +88,10 @@ class MetadataService:
         if entity is None:
             raise NotFoundError(f"No catalog entity with URN '{urn}'.")
 
-        detail = MetadataEntityDetail.model_validate(entity)
+        # Built from the flat read model rather than validated straight off the ORM object:
+        # `owners`, `classifications` and `business_terms` are relationship names on the
+        # entity, and Pydantic would try to coerce those ORM rows into the projected dicts.
+        detail = MetadataEntityDetail(**MetadataEntityRead.model_validate(entity).model_dump())
         detail.parent_urn = entity.parent.urn if entity.parent else None
 
         columns = [child for child in entity.children if child.entity_type is EntityType.COLUMN]
@@ -112,8 +117,11 @@ class MetadataService:
         ]
 
         detail.owners = [
-            {"name": assignment.owner.name, "role": assignment.role.value,
-             "email": assignment.owner.email}
+            {
+                "name": assignment.owner.name,
+                "role": assignment.role.value,
+                "email": assignment.owner.email,
+            }
             for assignment in await self.governance_repo.owners_for_entity(entity.id)
         ]
         detail.classifications = [
@@ -217,3 +225,56 @@ class MetadataService:
             }
         )
         return entity
+
+    # ------------------------------------------------------------------ #
+    # Health score
+    # ------------------------------------------------------------------ #
+    async def get_health_score(self, urn: str) -> HealthScoreBreakdown:
+        """Deterministic 0-100 score built from freshness, quality, ownership, governance and
+        lineage facts already in the catalog. No LLM involved - every input is auditable."""
+        entity = await self.get_entity(urn)
+
+        freshness = await self.quality_repo.get_freshness(entity.id)
+        metrics = await self.quality_repo.latest_metrics(entity.id, limit=20)
+        owners = await self.governance_repo.owners_for_entity(entity.id)
+        classifications = await self.governance_repo.classifications_for_entity(entity.id)
+        edges = await self.lineage_repo.list_for_entity(entity.id, direction="both")
+
+        quality_pass_ratio: float | None = None
+        if metrics:
+            severity = {
+                QualityStatus.PASS: 1.0,
+                QualityStatus.WARN: 0.5,
+                QualityStatus.UNKNOWN: 0.5,
+                QualityStatus.FAIL: 0.0,
+            }
+            quality_pass_ratio = sum(severity[metric.status] for metric in metrics) / len(metrics)
+
+        if not classifications:
+            classification_state = "none"
+        elif all(assignment.confirmed for assignment in classifications):
+            classification_state = "confirmed"
+        else:
+            classification_state = "unconfirmed"
+
+        if not edges:
+            lineage_state = "none"
+        elif any(edge.method is LineageMethod.AI_INFERRED for edge in edges):
+            lineage_state = "inferred"
+        else:
+            lineage_state = "verified"
+
+        result = compute_health_score(
+            freshness_status=freshness.status if freshness else None,
+            quality_pass_ratio=quality_pass_ratio,
+            has_owner=bool(owners),
+            classification_state=classification_state,
+            lineage_state=lineage_state,
+        )
+        return HealthScoreBreakdown(
+            entity_urn=entity.urn,
+            total=result.total,
+            label=result.label,
+            components=result.components,
+            weights=result.weights,
+        )

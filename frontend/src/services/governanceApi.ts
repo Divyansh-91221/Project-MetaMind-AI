@@ -7,6 +7,7 @@ export const governanceApi = {
   sensitive: (sensitivity = 'PII', limit = 50) =>
     api.get<
       Array<{
+        assignment_id: string;
         urn: string;
         qualified_name: string;
         entity_type: string;
@@ -14,8 +15,26 @@ export const governanceApi = {
         classification: string;
         level: string;
         regulation?: string | null;
+        method: string;
+        confidence: number;
+        confirmed: boolean;
       }>
     >('/governance/sensitive', { sensitivity, limit }),
+
+  reviewClassification: (assignmentId: string, status: 'CONFIRMED' | 'REJECTED') =>
+    api.post<{
+      assignment_id: string;
+      urn: string;
+      qualified_name: string;
+      entity_type: string;
+      platform: string;
+      classification: string;
+      level: string;
+      regulation?: string | null;
+      method: string;
+      confidence: number;
+      confirmed: boolean;
+    }>(`/governance/classifications/${assignmentId}/review`, { status }),
 
   unowned: (limit = 50) =>
     api.get<Array<{ urn: string; qualified_name: string; entity_type: string; platform: string }>>(

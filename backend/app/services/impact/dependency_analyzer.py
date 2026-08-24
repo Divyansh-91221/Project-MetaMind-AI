@@ -24,9 +24,7 @@ class DependencyAnalyzer:
         return index
 
     @classmethod
-    def path_metrics(
-        cls, result: GraphTraversalResult, node_urn: str
-    ) -> tuple[float, bool]:
+    def path_metrics(cls, result: GraphTraversalResult, node_urn: str) -> tuple[float, bool]:
         """Weakest confidence and whether any AI-inferred edge is involved.
 
         Walks backwards from the node to the root so the answer reflects the *whole* chain,

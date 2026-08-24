@@ -46,7 +46,9 @@ class LoadedDocument:
 class DocumentLoader:
     """Builds retrievable documents from catalog objects and files."""
 
-    def from_entity(self, entity: MetadataEntity, *, context: dict[str, Any] | None = None) -> LoadedDocument:
+    def from_entity(
+        self, entity: MetadataEntity, *, context: dict[str, Any] | None = None
+    ) -> LoadedDocument:
         """Serialise an asset into prose so semantic search can reach it.
 
         Only descriptive text is indexed - lineage and technical facts stay in their

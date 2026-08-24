@@ -10,7 +10,7 @@ from __future__ import annotations
 import hashlib
 import math
 import re
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from app.core.config import settings
 from app.core.exceptions import ProviderError
@@ -82,13 +82,13 @@ class OpenAIEmbeddingProvider:
             )
         self.dimension = settings.embedding_dimension
         self.model = settings.embedding_model
-        self._client = None
+        self._client: Any = None
 
-    def _get_client(self):  # type: ignore[no-untyped-def]
+    def _get_client(self) -> Any:
         if self._client is None:
             from openai import AsyncOpenAI
 
-            assert settings.embedding_api_key is not None  # noqa: S101 - checked in __init__
+            assert settings.embedding_api_key is not None
             self._client = AsyncOpenAI(
                 api_key=settings.embedding_api_key.get_secret_value(),
                 base_url=settings.embedding_api_base or None,
@@ -100,7 +100,7 @@ class OpenAIEmbeddingProvider:
             return []
         try:
             response = await self._get_client().embeddings.create(model=self.model, input=texts)
-        except Exception as exc:  # noqa: BLE001 - normalised into a domain error
+        except Exception as exc:
             logger.error("embedding_request_failed", extra={"error": str(exc)})
             raise ProviderError("Embedding provider request failed.") from exc
         return [item.embedding for item in response.data]
@@ -115,7 +115,7 @@ _provider: EmbeddingProvider | None = None
 
 def get_embedding_provider() -> EmbeddingProvider:
     """Return the configured provider (cached for the process lifetime)."""
-    global _provider  # noqa: PLW0603
+    global _provider
     if _provider is None:
         _provider = (
             OpenAIEmbeddingProvider()
@@ -131,7 +131,7 @@ def get_embedding_provider() -> EmbeddingProvider:
 
 def set_embedding_provider(provider: EmbeddingProvider) -> None:
     """Override the provider (used by tests)."""
-    global _provider  # noqa: PLW0603
+    global _provider
     _provider = provider
 
 

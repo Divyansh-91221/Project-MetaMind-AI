@@ -11,10 +11,9 @@ from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
-from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects import postgresql
 
-from app.core.config import settings
+from app.models.documents import EMBEDDING_COLUMN_TYPE, PGVECTOR_ENABLED
 
 revision: str = "0001_initial"
 down_revision: str | None = None
@@ -123,8 +122,10 @@ def _timestamps() -> tuple[sa.Column, sa.Column]:
 def upgrade() -> None:
     bind = op.get_bind()
 
-    # pgvector powers semantic retrieval; uuid-ossp is handy for ad-hoc SQL.
-    op.execute("CREATE EXTENSION IF NOT EXISTS vector")
+    # pgvector is only required when it is the configured vector store; with
+    # VECTOR_STORE=memory the platform runs on a plain PostgreSQL instance.
+    if PGVECTOR_ENABLED:
+        op.execute("CREATE EXTENSION IF NOT EXISTS vector")
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
 
     for name, values in ENUMS.items():
@@ -546,7 +547,7 @@ def upgrade() -> None:
         sa.Column("content", sa.Text(), nullable=False),
         sa.Column("entity_urn", sa.String(1024)),
         sa.Column("document_type", _enum("document_type"), nullable=False),
-        sa.Column("embedding", Vector(settings.embedding_dimension)),
+        sa.Column("embedding", EMBEDDING_COLUMN_TYPE),
         sa.Column(
             "chunk_metadata",
             postgresql.JSONB(),
@@ -557,11 +558,12 @@ def upgrade() -> None:
     )
     op.create_index("ix_document_chunks_document", "document_chunks", ["document_id"])
     op.create_index("ix_document_chunks_entity_urn", "document_chunks", ["entity_urn"])
-    # IVFFlat keeps cosine search fast; rebuild/tune `lists` as the corpus grows.
-    op.execute(
-        "CREATE INDEX ix_document_chunks_embedding ON document_chunks "
-        "USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)"
-    )
+    if PGVECTOR_ENABLED:
+        # IVFFlat keeps cosine search fast; rebuild/tune `lists` as the corpus grows.
+        op.execute(
+            "CREATE INDEX ix_document_chunks_embedding ON document_chunks "
+            "USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)"
+        )
 
 
 def downgrade() -> None:

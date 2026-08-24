@@ -47,16 +47,15 @@ class GlossaryRepository:
         if kpi_only:
             base = base.where(BusinessTerm.is_kpi.is_(True))
         total = int(
-            (await self.session.execute(select(func.count()).select_from(base.subquery())))
-            .scalar_one()
+            (
+                await self.session.execute(select(func.count()).select_from(base.subquery()))
+            ).scalar_one()
         )
         stmt = base.order_by(BusinessTerm.name).limit(limit).offset(offset)
         return list((await self.session.execute(stmt)).scalars().all()), total
 
     async def upsert_term(self, name: str, domain: str, **values: Any) -> BusinessTerm:
-        stmt = select(BusinessTerm).where(
-            BusinessTerm.name == name, BusinessTerm.domain == domain
-        )
+        stmt = select(BusinessTerm).where(BusinessTerm.name == name, BusinessTerm.domain == domain)
         term = (await self.session.execute(stmt)).scalar_one_or_none()
         if term is None:
             term = BusinessTerm(name=name, domain=domain, **values)

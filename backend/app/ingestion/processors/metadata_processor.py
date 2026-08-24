@@ -73,9 +73,11 @@ class MetadataProcessor:
                 result.updated += int(not created)
 
                 await self._apply_context(raw, entity.id, principal=principal)
-                if classify:
+                # Connector-declared classifications are already persisted as reviewable facts.
+                # Do not immediately override them with rule-based auto-confirmation.
+                if classify and not raw.classifications:
                     await self.classification.apply(entity, principal=principal)
-            except Exception as exc:  # noqa: BLE001 - one bad record must not fail the run
+            except Exception as exc:
                 message = f"{raw.entity_type.value} {raw.qualified_name}: {exc}"
                 result.errors.append(message)
                 logger.warning("entity_ingestion_failed", extra={"error": message})
@@ -83,16 +85,14 @@ class MetadataProcessor:
         logger.info(
             "metadata_processing_completed",
             extra={
-                "created": result.created,
-                "updated": result.updated,
+                "entities_created": result.created,
+                "entities_updated": result.updated,
                 "errors": len(result.errors),
             },
         )
         return result
 
-    async def _apply_context(
-        self, raw: RawEntity, entity_id: uuid.UUID, *, principal: str
-    ) -> None:
+    async def _apply_context(self, raw: RawEntity, entity_id: uuid.UUID, *, principal: str) -> None:
         """Apply ownership, classification and glossary links declared by the connector."""
         for owner_name, role in raw.owners:
             try:

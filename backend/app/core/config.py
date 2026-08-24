@@ -7,17 +7,22 @@ All configuration is environment driven (12-factor). Nothing secret is ever comm
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Annotated, Literal
 
 from pydantic import Field, PostgresDsn, SecretStr, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Resolved from this file, not the working directory: the API, Alembic, scripts and tests all
+# run from different places and must load the same configuration.
+_PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class Settings(BaseSettings):
     """Typed application settings."""
 
     model_config = SettingsConfigDict(
-        env_file=(".env", "../.env"),
+        env_file=(_PROJECT_ROOT / ".env", ".env"),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -30,7 +35,8 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_json: bool = False
     api_v1_prefix: str = "/api/v1"
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
+    # Kept as a raw string: pydantic-settings JSON-decodes list-typed env vars.
+    cors_origins: str = "http://localhost:5173"
 
     # --- PostgreSQL ---------------------------------------------------------
     postgres_host: str = "localhost"
@@ -97,10 +103,17 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------ #
     @field_validator("cors_origins", mode="before")
     @classmethod
-    def _split_origins(cls, value: object) -> object:
-        if isinstance(value, str):
-            return [origin.strip() for origin in value.split(",") if origin.strip()]
+    def _join_origins(cls, value: object) -> object:
+        """Accept a list (from code or tests) as well as a comma-separated string."""
+        if isinstance(value, list | tuple):
+            return ",".join(str(item) for item in value)
         return value
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def cors_origin_list(self) -> list[str]:
+        """Allowed browser origins."""
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
     @field_validator("log_level")
     @classmethod

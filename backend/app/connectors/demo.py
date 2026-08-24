@@ -53,6 +53,16 @@ def _table(
     properties: dict[str, Any] | None = None,
 ) -> list[RawEntity]:
     """Build a table (or dataset) plus its columns."""
+    constraints: list[dict[str, Any]] = []
+    primary_key_columns = [column["name"] for column in columns if column.get("pk")]
+    if primary_key_columns:
+        constraints.append(
+            {
+                "name": f"pk_{qualified_name.replace('.', '_')}",
+                "type": "PRIMARY KEY",
+                "columns": primary_key_columns,
+            }
+        )
     entities = [
         RawEntity(
             entity_type=entity_type,
@@ -63,7 +73,8 @@ def _table(
             owners=owners or [],
             tags=tags or [],
             row_count=row_count,
-            properties=properties or {},
+            constraints=constraints,
+            properties={**(properties or {}), **({"constraints": constraints} if constraints else {})},
         )
     ]
     for index, column in enumerate(columns):
@@ -184,6 +195,84 @@ class DemoConnector(MetadataConnector):
             owners=[("Order to Cash", "DATA_OWNER")],
             tags=["source-of-record", "transactional"],
             row_count=48_000_000,
+        )
+        entities += _table(
+            SAP,
+            "sap.card_payments",
+            "SAP payment instrument records for card-based customer settlements.",
+            [
+                {"name": "payment_id", "type": "VARCHAR(18)", "pk": True, "nullable": False},
+                {
+                    "name": "customer_id",
+                    "type": "VARCHAR(18)",
+                    "description": "Customer that owns the payment instrument.",
+                    "classifications": ["PII.CustomerIdentifier"],
+                    "terms": ["Customer"],
+                },
+                {
+                    "name": "card_number",
+                    "type": "VARCHAR(19)",
+                    "description": "Primary account number captured during payment authorization.",
+                    "classifications": ["PCI.CardNumber"],
+                },
+                {
+                    "name": "masked_card_number",
+                    "type": "VARCHAR(24)",
+                    "description": "Masked display form of the card number used in operations tooling.",
+                    "classifications": ["PCI.CardNumber"],
+                },
+                {
+                    "name": "cvv",
+                    "type": "VARCHAR(4)",
+                    "description": "Card verification value retained only for transient reconciliation demos.",
+                    "classifications": ["PCI.CardNumber"],
+                },
+                {
+                    "name": "pan_token",
+                    "type": "VARCHAR(64)",
+                    "description": "Tokenized representation of the payment account number.",
+                    "classifications": ["PCI.CardNumber"],
+                },
+                {
+                    "name": "iban",
+                    "type": "VARCHAR(34)",
+                    "description": "International bank account number used for settlement fallback.",
+                    "classifications": ["PCI.CardNumber"],
+                },
+                {
+                    "name": "account_number",
+                    "type": "VARCHAR(20)",
+                    "description": "Settlement account number tied to the payment method.",
+                    "classifications": ["PCI.CardNumber"],
+                },
+                {
+                    "name": "issuer_account_number",
+                    "type": "VARCHAR(20)",
+                    "description": "Issuer-side account number used for dispute investigations.",
+                    "classifications": ["PCI.CardNumber"],
+                },
+                {
+                    "name": "merchant_account_number",
+                    "type": "VARCHAR(20)",
+                    "description": "Merchant settlement account number.",
+                    "classifications": ["PCI.CardNumber"],
+                },
+                {
+                    "name": "acquirer_iban",
+                    "type": "VARCHAR(34)",
+                    "description": "Acquirer bank account used during settlement.",
+                    "classifications": ["PCI.CardNumber"],
+                },
+                {
+                    "name": "payment_account_number",
+                    "type": "VARCHAR(20)",
+                    "description": "Normalized payment account number for downstream reconciliation.",
+                    "classifications": ["PCI.CardNumber"],
+                },
+            ],
+            owners=[("Finance Operations", "DATA_OWNER")],
+            tags=["payments", "sensitive", "pci"],
+            row_count=8_500_000,
         )
 
         # --- Databricks -------------------------------------------------
@@ -438,9 +527,7 @@ class DemoConnector(MetadataConnector):
             ("snowflake.sales", "order_month", "order_month", None),
         ):
             yield RawLineage(
-                source_urn=urn(
-                    EntityType.COLUMN, SNOWFLAKE, f"{source_table}.{source_column}"
-                ),
+                source_urn=urn(EntityType.COLUMN, SNOWFLAKE, f"{source_table}.{source_column}"),
                 target_urn=urn(
                     EntityType.COLUMN, POWERBI, f"powerbi.sales_dataset.{target_column}"
                 ),

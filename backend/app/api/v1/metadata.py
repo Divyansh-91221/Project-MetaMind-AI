@@ -12,6 +12,7 @@ from app.core.security import Permission
 from app.ingestion.pipeline import IngestionPipeline
 from app.schemas.common import Page
 from app.schemas.metadata import (
+    HealthScoreBreakdown,
     IngestionRequest,
     IngestionResult,
     MetadataEntityDetail,
@@ -91,6 +92,18 @@ async def list_columns(
     return await MetadataService(session).get_columns(urn)
 
 
+@router.get(
+    "/{urn:path}/health",
+    response_model=HealthScoreBreakdown,
+    summary="Deterministic 0-100 health score for an asset",
+)
+async def get_health_score(
+    urn: str, session: DbSession, principal: CurrentPrincipal
+) -> HealthScoreBreakdown:
+    principal.require(Permission.METADATA_READ)
+    return await MetadataService(session).get_health_score(urn)
+
+
 @router.patch(
     "/{urn:path}",
     response_model=MetadataEntityRead,
@@ -103,9 +116,7 @@ async def update_metadata(
     principal: CurrentPrincipal,
 ) -> MetadataEntityRead:
     principal.require(Permission.METADATA_WRITE)
-    return await MetadataService(session).update_entity(
-        urn, payload, principal=principal.subject
-    )
+    return await MetadataService(session).update_entity(urn, payload, principal=principal.subject)
 
 
 @router.get(

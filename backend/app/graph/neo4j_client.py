@@ -92,14 +92,14 @@ class Neo4jGraphStore:
                 await self.connect()
             await self._run("RETURN 1 AS ok")
             return True
-        except Exception as exc:  # noqa: BLE001 - health checks never raise
+        except Exception as exc:
             logger.warning("neo4j_unavailable", extra={"error": str(exc)})
             return False
 
     async def _run(self, query: str, **params: Any) -> list[dict[str, Any]]:
         if self._driver is None:
             await self.connect()
-        assert self._driver is not None  # noqa: S101 - narrowed by connect()
+        assert self._driver is not None
         try:
             async with self._driver.session(database=self._database) as session:
                 result = await session.run(query, **params)
@@ -323,16 +323,14 @@ _store: GraphStore | None = None
 
 def get_graph_store() -> GraphStore:
     """Return the process-wide graph store selected by ``GRAPH_STORE``."""
-    global _store  # noqa: PLW0603 - single shared driver per process
+    global _store
     if _store is None:
-        _store = (
-            InMemoryGraphStore() if settings.graph_store == "memory" else Neo4jGraphStore()
-        )
+        _store = InMemoryGraphStore() if settings.graph_store == "memory" else Neo4jGraphStore()
         logger.info("graph_store_selected", extra={"store": settings.graph_store})
     return _store
 
 
 def set_graph_store(store: GraphStore) -> None:
     """Override the store (used by tests)."""
-    global _store  # noqa: PLW0603
+    global _store
     _store = store

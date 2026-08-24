@@ -75,6 +75,12 @@ class MetadataRepository:
         stmt = select(MetadataEntity).where(MetadataEntity.urn.in_(urns))
         return list((await self.session.execute(stmt)).scalars().all())
 
+    async def get_many_by_ids(self, entity_ids: list[uuid.UUID]) -> list[MetadataEntity]:
+        if not entity_ids:
+            return []
+        stmt = select(MetadataEntity).where(MetadataEntity.id.in_(entity_ids))
+        return list((await self.session.execute(stmt)).scalars().all())
+
     async def get_children(
         self, parent_id: uuid.UUID, entity_type: EntityType | None = None
     ) -> list[MetadataEntity]:

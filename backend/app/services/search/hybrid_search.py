@@ -115,14 +115,17 @@ class SearchService:
 
     async def reindex(self, request: IndexRequest) -> dict[str, int]:
         """Rebuild or refresh the semantic index."""
-        report = await self.pipeline.index_catalog(entity_urns=request.entity_urns or None)
+        report = await self.pipeline.index_catalog(
+            entity_urns=request.entity_urns or None,
+            force=request.rebuild,
+        )
         totals = {
             "documents_indexed": report.documents_indexed,
             "chunks_indexed": report.chunks_indexed,
             "skipped_unchanged": report.skipped_unchanged,
         }
         if request.include_glossary:
-            glossary = await self.pipeline.index_glossary()
+            glossary = await self.pipeline.index_glossary(force=request.rebuild)
             totals["documents_indexed"] += glossary.documents_indexed
             totals["chunks_indexed"] += glossary.chunks_indexed
             totals["skipped_unchanged"] += glossary.skipped_unchanged

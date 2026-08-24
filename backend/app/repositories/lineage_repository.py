@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -72,13 +72,13 @@ class LineageRepository:
             stmt = stmt.where(LineageEdge.method != LineageMethod.AI_INFERRED)
 
         stmt = stmt.options(
-            joinedload(LineageEdge.source), joinedload(LineageEdge.target)
+            joinedload(LineageEdge.source),
+            joinedload(LineageEdge.target),
+            joinedload(LineageEdge.pipeline),
         ).order_by(LineageEdge.confidence.desc())
         return list((await self.session.execute(stmt)).unique().scalars().all())
 
-    async def list_all(
-        self, *, limit: int | None = None, offset: int = 0
-    ) -> list[LineageEdge]:
+    async def list_all(self, *, limit: int | None = None, offset: int = 0) -> list[LineageEdge]:
         """Full edge list - used to rebuild the graph projection."""
         stmt = (
             select(LineageEdge)
@@ -249,16 +249,12 @@ class LineageRepository:
         )
         return list((await self.session.execute(stmt)).scalars().all())
 
-    async def delete_edges_for_source(self, extractor: str) -> int:
-        """Remove edges produced by one extractor - used by full-refresh ingestion.
+    async def delete_edges_for_method(self, method: LineageMethod) -> int:
+        """Remove edges produced by one extraction method - used by full-refresh ingestion.
 
         TODO: replace with a watermark/soft-delete strategy so history is preserved.
         """
-        stmt = select(LineageEdge).where(
-            and_(LineageEdge.method == LineageMethod(extractor))
-            if extractor in set(LineageMethod)
-            else False
-        )
+        stmt = select(LineageEdge).where(LineageEdge.method == method)
         edges = list((await self.session.execute(stmt)).unique().scalars().all())
         for edge in edges:
             await self.session.delete(edge)

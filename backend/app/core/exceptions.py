@@ -11,8 +11,10 @@ from typing import Any
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import DBAPIError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.core.config import settings
 from app.core.logging import get_logger, get_request_id
 
 logger = get_logger(__name__)
@@ -97,9 +99,7 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(AppError)
     async def _app_error(_: Request, exc: AppError) -> JSONResponse:
-        logger.warning(
-            "domain_error", extra={"error_code": exc.error_code, "message": exc.message}
-        )
+        logger.warning("domain_error", extra={"error_code": exc.error_code, "message": exc.message})
         return _problem(
             status_code=exc.status_code,
             error_code=exc.error_code,
@@ -122,6 +122,27 @@ def register_exception_handlers(app: FastAPI) -> None:
             status_code=exc.status_code,
             error_code="http_error",
             message=str(exc.detail),
+        )
+
+    @app.exception_handler(DBAPIError)
+    @app.exception_handler(ConnectionError)
+    async def _database_unavailable(_: Request, exc: Exception) -> JSONResponse:
+        """Report an unreachable database as 503 with a fix, not an opaque 500.
+
+        asyncpg lets the OS-level ``ConnectionRefusedError`` propagate unwrapped when the
+        pool cannot open a socket, so both it and SQLAlchemy's wrapper are handled.
+        """
+        reason = getattr(exc, "orig", None) or exc
+        logger.error("database_unavailable", extra={"error": str(reason)[:200]})
+        return _problem(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            error_code="database_unavailable",
+            message=(
+                "The metadata database is unreachable. Start PostgreSQL with "
+                "`docker compose up -d postgres`, then apply migrations with "
+                "`alembic upgrade head`."
+            ),
+            details={"host": settings.postgres_host, "port": settings.postgres_port},
         )
 
     @app.exception_handler(Exception)

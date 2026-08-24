@@ -69,7 +69,7 @@ async def check_database() -> bool:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         return True
-    except Exception as exc:  # noqa: BLE001 - health checks must never raise
+    except Exception as exc:
         logger.warning("postgres_unavailable", extra={"error": str(exc)})
         return False
 

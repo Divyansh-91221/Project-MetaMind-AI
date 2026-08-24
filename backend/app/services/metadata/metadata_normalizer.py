@@ -70,6 +70,7 @@ class MetadataNormalizer:
             "properties": {
                 **raw.properties,
                 **({"raw_data_type": raw.data_type} if raw.data_type else {}),
+                **({"constraints": raw.constraints} if raw.constraints else {}),
             },
             "source_system": raw.properties.get("source_system") or platform,
             "last_seen_at": utcnow(),

@@ -8,9 +8,9 @@ unchanged, which keeps the system useful and grounded without any model access.
 
 from __future__ import annotations
 
+from app.agents.prompts.system import INTENT_SYSTEM_PROMPT, SYSTEM_PROMPT
 from app.agents.state import AgentState
 from app.ai.llm import LLMMessage
-from app.agents.prompts.system import INTENT_SYSTEM_PROMPT, SYSTEM_PROMPT
 from app.schemas.copilot import EvidenceItem
 
 MAX_EVIDENCE_CHARS = 8000
@@ -37,8 +37,7 @@ def format_evidence(evidence: list[EvidenceItem]) -> str:
         line = (
             f"[{index}] ({item.kind}) {item.title}{suffix}\n"
             f"    {item.detail}\n"
-            f"    source: {item.source}"
-            + (f" | urn: {item.urn}" if item.urn else "")
+            f"    source: {item.source}" + (f" | urn: {item.urn}" if item.urn else "")
         )
         budget -= len(line)
         if budget <= 0:
@@ -50,9 +49,7 @@ def format_evidence(evidence: list[EvidenceItem]) -> str:
 
 def build_answer_messages(state: AgentState, draft: str) -> list[LLMMessage]:
     """Assemble the grounded synthesis request."""
-    history = "\n".join(
-        f"{message.role}: {message.content}" for message in state.history[-6:]
-    )
+    history = "\n".join(f"{message.role}: {message.content}" for message in state.history[-6:])
     warnings = "\n".join(f"- {warning}" for warning in state.warnings)
 
     user_content = f"""\
@@ -65,15 +62,16 @@ RESOLVED ASSETS
 EVIDENCE
 {format_evidence(state.evidence)}
 
-CAVEATS
+    CAVEATS
 {warnings or "(none)"}
 
 CONVERSATION SO FAR
 {history or "(new conversation)"}
 
-A grounded draft answer has already been assembled from the evidence above. Rewrite it so it \
+    A grounded draft answer has already been assembled from the evidence above. Rewrite it so it \
 reads clearly and directly. Do not add any fact that is not in the evidence. Preserve every \
-caveat about inferred or unverified lineage.
+caveat about inferred or unverified lineage. When uniqueness is involved, prefer constraint \
+evidence over lineage and do not imply uniqueness without schema proof.
 
 <draft>
 {draft}
@@ -99,6 +97,11 @@ FOLLOWUP_TEMPLATES: dict[str, list[str]] = {
         "Where does {name} come from?",
         "What uses {name}?",
         "Who owns {name}?",
+    ],
+    "UNIQUENESS": [
+        "What constraint proves {name} is unique?",
+        "Is {name} a primary key or unique key?",
+        "What other columns share the same constraint as {name}?",
     ],
     "UPSTREAM_LINEAGE": [
         "What will break if {name} changes?",

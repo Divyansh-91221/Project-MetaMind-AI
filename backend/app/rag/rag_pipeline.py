@@ -55,11 +55,13 @@ class RAGPipeline:
     # ------------------------------------------------------------------ #
     # Indexing
     # ------------------------------------------------------------------ #
-    async def index_documents(self, documents: list[LoadedDocument]) -> IndexingReport:
+    async def index_documents(
+        self, documents: list[LoadedDocument], *, force: bool = False
+    ) -> IndexingReport:
         report = IndexingReport()
         for loaded in documents:
             existing = await self._existing_document(loaded)
-            if existing is not None and existing.content_hash == loaded.content_hash:
+            if existing is not None and existing.content_hash == loaded.content_hash and not force:
                 report.skipped_unchanged += 1
                 continue
 
@@ -115,7 +117,9 @@ class RAGPipeline:
         )
         return report
 
-    async def index_catalog(self, *, entity_urns: list[str] | None = None) -> IndexingReport:
+    async def index_catalog(
+        self, *, entity_urns: list[str] | None = None, force: bool = False
+    ) -> IndexingReport:
         """Index catalog descriptions so assets are semantically discoverable."""
         if entity_urns:
             entities = await self.metadata_repo.get_many_by_urns(entity_urns)
@@ -140,11 +144,14 @@ class RAGPipeline:
                 context["columns"] = [column.name for column in columns[:50]]
             documents.append(self.loader.from_entity(entity, context=context))
 
-        return await self.index_documents(documents)
+        return await self.index_documents(documents, force=force)
 
-    async def index_glossary(self) -> IndexingReport:
+    async def index_glossary(self, *, force: bool = False) -> IndexingReport:
         terms = (await self.session.execute(select(BusinessTerm))).scalars().all()
-        return await self.index_documents([self.loader.from_business_term(t) for t in terms])
+        return await self.index_documents(
+            [self.loader.from_business_term(t) for t in terms],
+            force=force,
+        )
 
     async def index_directory(
         self, directory: str, *, document_type: DocumentType | None = None

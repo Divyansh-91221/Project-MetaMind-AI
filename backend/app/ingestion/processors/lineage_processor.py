@@ -62,8 +62,8 @@ class LineageProcessor:
             "lineage_processing_completed",
             extra={
                 "connector": connector.name,
-                "created": created,
-                "updated": updated,
+                "edges_created": created,
+                "edges_updated": updated,
                 "warnings": len(result.warnings),
             },
         )

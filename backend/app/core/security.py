@@ -100,7 +100,9 @@ def decode_token(token: str) -> Principal:
     cache signing keys. TODO: map IdP groups to :class:`Role` through configuration.
     """
     if not settings.jwt_secret:
-        raise AuthenticationError("Authentication is enabled but no verification key is configured.")
+        raise AuthenticationError(
+            "Authentication is enabled but no verification key is configured."
+        )
 
     try:
         claims = jwt.decode(

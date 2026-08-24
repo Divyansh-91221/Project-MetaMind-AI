@@ -17,12 +17,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.connectors.base import MetadataConnector, RawEntity
 from app.connectors.registry import create_connector
-from app.core.constants import AuditAction, PlatformType
+from app.core.constants import AuditAction
 from app.core.exceptions import ConnectorError
 from app.core.logging import get_logger
 from app.ingestion.processors.lineage_processor import LineageProcessor
 from app.ingestion.processors.metadata_processor import MetadataProcessor
 from app.ingestion.processors.quality_processor import QualityProcessor
+from app.models.metadata import DataSource
 from app.repositories.audit_repository import AuditRepository
 from app.repositories.metadata_repository import MetadataRepository
 from app.schemas.metadata import IngestionRequest, IngestionResult
@@ -46,9 +47,7 @@ class IngestionPipeline:
         self.governance = GovernanceService(session)
         self.search = SearchService(session)
 
-    async def run(
-        self, request: IngestionRequest, *, principal: str = "system"
-    ) -> IngestionResult:
+    async def run(self, request: IngestionRequest, *, principal: str = "system") -> IngestionResult:
         run_id = uuid.uuid4()
         started_at = utcnow()
         started_perf = time.perf_counter()
@@ -138,17 +137,12 @@ class IngestionPipeline:
 
     async def _register_data_source(
         self, connector: MetadataConnector, name: str, request: IngestionRequest
-    ):  # type: ignore[no-untyped-def]
+    ) -> DataSource:
         """Create or refresh the data source row backing this connector run."""
-        platform = (
-            connector.platform
-            if connector.platform is not PlatformType.UNKNOWN
-            else PlatformType.UNKNOWN
-        )
         return await self.metadata_repo.upsert_data_source(
             name,
             connector_type=connector.name,
-            platform=platform,
+            platform=connector.platform,
             description=connector.description,
             # Configuration is stored without secrets; credentials stay in the secret store.
             config={k: v for k, v in request.config.items() if "password" not in k.lower()},
@@ -160,6 +154,6 @@ class IngestionPipeline:
         try:
             report = await self.search.pipeline.index_catalog(entity_urns=urns or None)
             return report.documents_indexed
-        except Exception as exc:  # noqa: BLE001 - indexing must not fail ingestion
+        except Exception as exc:
             logger.warning("reindex_failed", extra={"error": str(exc)})
             return 0

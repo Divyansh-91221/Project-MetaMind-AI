@@ -162,7 +162,7 @@ class QualityDimension(StrEnum):
 
 
 class QualityStatus(StrEnum):
-    PASS = "PASS"
+    PASS = "PASS"  # noqa: S105 - a quality verdict, not a credential
     WARN = "WARN"
     FAIL = "FAIL"
     UNKNOWN = "UNKNOWN"
@@ -190,6 +190,7 @@ class CopilotIntent(StrEnum):
     """Intents the agent can plan for."""
 
     DEFINITION = "DEFINITION"
+    UNIQUENESS = "UNIQUENESS"
     UPSTREAM_LINEAGE = "UPSTREAM_LINEAGE"
     DOWNSTREAM_LINEAGE = "DOWNSTREAM_LINEAGE"
     IMPACT_ANALYSIS = "IMPACT_ANALYSIS"
@@ -214,6 +215,8 @@ class AuditAction(StrEnum):
     COPILOT_QUERY = "COPILOT_QUERY"
     CONNECTOR_REGISTERED = "CONNECTOR_REGISTERED"
     GRAPH_REBUILT = "GRAPH_REBUILT"
+    CLASSIFICATION_CONFIRMED = "CLASSIFICATION_CONFIRMED"
+    CLASSIFICATION_REJECTED = "CLASSIFICATION_REJECTED"
 
 
 REQUEST_ID_HEADER: Final[str] = "X-Request-ID"

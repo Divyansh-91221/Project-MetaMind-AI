@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import Literal
 from typing import Any
 
 from pydantic import EmailStr, Field
@@ -87,6 +88,24 @@ class GovernanceProfile(APIModel):
     contains_pii: bool = False
     unowned: bool = True
     compliance_notes: list[str] = Field(default_factory=list)
+
+
+class SensitiveAssetRead(APIModel):
+    assignment_id: uuid.UUID
+    urn: str
+    qualified_name: str
+    entity_type: str
+    platform: str
+    classification: str
+    level: str
+    regulation: str | None = None
+    method: str
+    confidence: float
+    confirmed: bool = False
+
+
+class ClassificationReviewRequest(APIModel):
+    status: Literal["CONFIRMED", "REJECTED"]
 
 
 class SensitiveAssetsQuery(APIModel):

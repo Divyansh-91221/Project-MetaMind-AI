@@ -22,7 +22,7 @@ class MetadataTool(Tool):
         super().__init__(session)
         self.service = MetadataService(session)
 
-    async def run(self, *, urn: str, **_: Any) -> ToolResult:
+    async def run(self, *, urn: str, **_: Any) -> ToolResult:  # type: ignore[override]
         try:
             detail = await self.service.get_entity_detail(urn)
         except NotFoundError as exc:

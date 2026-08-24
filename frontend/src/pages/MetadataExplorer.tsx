@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Compass, Filter, Layers3, RefreshCw, Search, TableProperties } from 'lucide-react';
 import { useApi, useDebounce } from '@/hooks';
 import { metadataApi } from '@/services/metadataApi';
 import { AsyncBoundary, Card, PageHeader } from '@/components/common';
+import { Badge } from '@/components/common/Badge';
 import { AssetList } from '@/components/metadata';
 import type { EntityType } from '@/types';
 
@@ -21,6 +24,8 @@ const PAGE_SIZE = 25;
 
 /** Browse and filter the catalog. */
 export function MetadataExplorer() {
+  const location = useLocation();
+  const isDiscovery = location.pathname === '/discovery';
   const [entityType, setEntityType] = useState<EntityType | ''>('TABLE');
   const [platform, setPlatform] = useState('');
   const [search, setSearch] = useState('');
@@ -39,60 +44,104 @@ export function MetadataExplorer() {
     [entityType, platform, debouncedSearch, page],
   );
 
+  const clearFilters = () => {
+    setEntityType('');
+    setPlatform('');
+    setSearch('');
+    setPage(0);
+  };
+
+  const activeFilters = [
+    entityType ? `Type: ${entityType}` : null,
+    platform ? `Platform: ${platform}` : null,
+    debouncedSearch ? `Query: ${debouncedSearch}` : null,
+  ].filter(Boolean) as string[];
+
   return (
     <>
       <PageHeader
-        title="Metadata Explorer"
-        description="Every catalogued asset across the enterprise landscape, with its technical metadata and business context."
+        title={isDiscovery ? 'Discovery Workspace' : 'Catalog Workspace'}
+        description={
+          isDiscovery
+            ? 'Discover assets, datasets, dashboards and pipelines across enterprise domains with semantic and structural filters.'
+            : 'Browse governed metadata assets across the enterprise with platform and entity-level precision.'
+        }
+        actions={
+          <div className="row">
+            <Link to="/lineage" className="button">Open Lineage</Link>
+            <Link to="/governance" className="button">Open Governance</Link>
+          </div>
+        }
       />
 
-      <Card>
-        <div className="row">
-          <input
-            className="input"
-            style={{ flex: 2, minWidth: 220 }}
-            placeholder="Filter by name or description"
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setPage(0);
-            }}
-            aria-label="Filter assets"
-          />
-          <select
-            className="select"
-            style={{ width: 170 }}
-            value={entityType}
-            onChange={(event) => {
-              setEntityType(event.target.value as EntityType | '');
-              setPage(0);
-            }}
-            aria-label="Entity type"
-          >
-            <option value="">All types</option>
-            {ENTITY_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-          <select
-            className="select"
-            style={{ width: 160 }}
-            value={platform}
-            onChange={(event) => {
-              setPlatform(event.target.value);
-              setPage(0);
-            }}
-            aria-label="Platform"
-          >
-            <option value="">All platforms</option>
-            <option value="sap">SAP</option>
-            <option value="databricks">Databricks</option>
-            <option value="snowflake">Snowflake</option>
-            <option value="powerbi">Power BI</option>
-            <option value="postgres">PostgreSQL</option>
-          </select>
+      <Card className="catalog-toolbar">
+        <div className="catalog-toolbar-top">
+          <div className="catalog-stat">
+            <span className="metric-head"><Layers3 size={16} /> Entity Type</span>
+            <select
+              className="select"
+              value={entityType}
+              onChange={(event) => {
+                setEntityType(event.target.value as EntityType | '');
+                setPage(0);
+              }}
+              aria-label="Entity type"
+            >
+              <option value="">All types</option>
+              {ENTITY_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="catalog-stat">
+            <span className="metric-head"><Compass size={16} /> Platform</span>
+            <select
+              className="select"
+              value={platform}
+              onChange={(event) => {
+                setPlatform(event.target.value);
+                setPage(0);
+              }}
+              aria-label="Platform"
+            >
+              <option value="">All platforms</option>
+              <option value="sap">SAP</option>
+              <option value="databricks">Databricks</option>
+              <option value="snowflake">Snowflake</option>
+              <option value="powerbi">Power BI</option>
+              <option value="postgres">PostgreSQL</option>
+            </select>
+          </div>
+
+          <div className="catalog-search-wrap">
+            <span className="metric-head"><Search size={16} /> Search Catalog</span>
+            <input
+              className="input"
+              placeholder="Filter by name or description"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(0);
+              }}
+              aria-label="Filter assets"
+            />
+          </div>
+
+          <button className="button" type="button" onClick={clearFilters}>
+            <RefreshCw size={14} /> Clear
+          </button>
+        </div>
+
+        <div className="row" style={{ marginTop: 10 }}>
+          <span className="metric-head"><Filter size={14} /> Active filters</span>
+          {activeFilters.length === 0 ? (
+            <Badge>None</Badge>
+          ) : (
+            activeFilters.map((item) => <Badge key={item} tone="accent">{item}</Badge>)
+          )}
         </div>
       </Card>
 
@@ -124,6 +173,14 @@ export function MetadataExplorer() {
           ) : null
         }
       >
+        <div className="row" style={{ marginBottom: 10, justifyContent: 'space-between' }}>
+          <span className="faint small">
+            {isDiscovery
+              ? 'Discovery mode favors broad exploration across domains.'
+              : 'Catalog mode emphasizes governed metadata inventory visibility.'}
+          </span>
+          <span className="metric-head"><TableProperties size={14} /> Asset Inventory</span>
+        </div>
         <AsyncBoundary {...result} onRetry={result.reload}>
           {(data) => <AssetList items={data.items} />}
         </AsyncBoundary>

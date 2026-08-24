@@ -10,6 +10,7 @@ from app.agents.tools.lineage_tool import LineageTool
 from app.agents.tools.metadata_tool import MetadataTool
 from app.agents.tools.quality_tool import QualityTool
 from app.agents.tools.search_tool import SearchTool
+from app.agents.tools.uniqueness_tool import UniquenessTool
 
 TOOL_CLASSES: tuple[type[Tool], ...] = (
     MetadataTool,
@@ -19,6 +20,7 @@ TOOL_CLASSES: tuple[type[Tool], ...] = (
     GovernanceTool,
     GlossaryTool,
     QualityTool,
+    UniquenessTool,
 )
 
 
@@ -37,6 +39,7 @@ __all__ = [
     "MetadataTool",
     "QualityTool",
     "SearchTool",
+    "UniquenessTool",
     "Tool",
     "ToolResult",
     "build_toolbox",

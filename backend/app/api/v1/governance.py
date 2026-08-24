@@ -10,11 +10,13 @@ from app.api.deps import CurrentPrincipal, DbSession
 from app.core.constants import SensitivityTag
 from app.core.security import Permission
 from app.schemas.governance import (
+    ClassificationReviewRequest,
     GovernanceProfile,
     OwnerCreate,
     OwnerRead,
     OwnershipAssignment,
     OwnershipRead,
+    SensitiveAssetRead,
     SensitiveAssetsQuery,
 )
 from app.services.governance.governance_service import GovernanceService
@@ -49,7 +51,7 @@ async def assign_owner(
     return await GovernanceService(session).assign_owner(payload, principal=principal.subject)
 
 
-@router.get("/sensitive", summary="Assets carrying a sensitivity tag")
+@router.get("/sensitive", response_model=list[SensitiveAssetRead], summary="Assets carrying a sensitivity tag")
 async def sensitive_assets(
     session: DbSession,
     principal: CurrentPrincipal,
@@ -61,6 +63,25 @@ async def sensitive_assets(
     principal.require(Permission.METADATA_READ)
     return await GovernanceService(session).sensitive_assets(
         SensitiveAssetsQuery(sensitivity=sensitivity, platform=platform, limit=limit)
+    )
+
+
+@router.post(
+    "/classifications/{assignment_id}/review",
+    response_model=SensitiveAssetRead,
+    summary="Confirm or reject a classification assignment",
+)
+async def review_classification(
+    assignment_id: str,
+    payload: ClassificationReviewRequest,
+    session: DbSession,
+    principal: CurrentPrincipal,
+) -> SensitiveAssetRead:
+    principal.require(Permission.GOVERNANCE_WRITE)
+    from uuid import UUID
+
+    return await GovernanceService(session).review_classification(
+        UUID(assignment_id), payload, principal=principal.subject
     )
 
 

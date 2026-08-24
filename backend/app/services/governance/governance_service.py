@@ -6,12 +6,14 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.constants import ClassificationLevel, OwnershipRole, SensitivityTag
+from app.core.constants import AuditAction, ClassificationLevel, OwnershipRole, SensitivityTag
 from app.core.exceptions import NotFoundError
 from app.core.logging import get_logger
+from app.repositories.audit_repository import AuditRepository
 from app.repositories.governance_repository import GovernanceRepository
 from app.repositories.metadata_repository import MetadataRepository
 from app.schemas.governance import (
+    ClassificationReviewRequest,
     ClassificationRead,
     EntityClassificationRead,
     GovernanceProfile,
@@ -20,6 +22,7 @@ from app.schemas.governance import (
     OwnershipAssignment,
     OwnershipRead,
     PolicyRead,
+    SensitiveAssetRead,
     SensitiveAssetsQuery,
 )
 from app.services.governance.classification_service import ClassificationService
@@ -42,6 +45,7 @@ class GovernanceService:
         self.metadata_repo = MetadataRepository(session)
         self.classification = ClassificationService(session)
         self.policy = PolicyService(session)
+        self.audit_repo = AuditRepository(session)
 
     # ------------------------------------------------------------------ #
     # Profile
@@ -53,9 +57,7 @@ class GovernanceService:
             raise NotFoundError(f"No catalog entity with URN '{urn}'.")
 
         owners = [
-            OwnershipRead(
-                role=assignment.role, owner=OwnerRead.model_validate(assignment.owner)
-            )
+            OwnershipRead(role=assignment.role, owner=OwnerRead.model_validate(assignment.owner))
             for assignment in entity.owners
         ]
         classifications = [
@@ -71,7 +73,9 @@ class GovernanceService:
 
         sensitivities = {item.classification.sensitivity for item in classifications}
         levels = {item.classification.level for item in classifications}
-        highest_level = max(levels, key=lambda level: _LEVEL_ORDER[level], default=ClassificationLevel.INTERNAL)
+        highest_level = max(
+            levels, key=lambda level: _LEVEL_ORDER[level], default=ClassificationLevel.INTERNAL
+        )
 
         policies = await self.policy.applicable_policies(
             entity, sensitivities=sensitivities, levels=levels
@@ -85,7 +89,8 @@ class GovernanceService:
         unconfirmed = [item for item in classifications if not item.confirmed]
         if unconfirmed:
             notes.append(
-                f"{len(unconfirmed)} classification(s) are suggested but not yet confirmed by a steward."
+                f"{len(unconfirmed)} classification(s) are suggested but not yet "
+                "confirmed by a steward."
             )
 
         return GovernanceProfile(
@@ -121,9 +126,7 @@ class GovernanceService:
     async def list_owners(self) -> list[OwnerRead]:
         return [OwnerRead.model_validate(owner) for owner in await self.repo.list_owners()]
 
-    async def assign_owner(
-        self, payload: OwnershipAssignment, *, principal: str
-    ) -> OwnershipRead:
+    async def assign_owner(self, payload: OwnershipAssignment, *, principal: str) -> OwnershipRead:
         entity = await self.metadata_repo.get_by_urn(payload.entity_urn)
         if entity is None:
             raise NotFoundError(f"No catalog entity with URN '{payload.entity_urn}'.")
@@ -138,9 +141,7 @@ class GovernanceService:
         assignment = await self.repo.assign_owner(
             entity.id, owner_id, payload.role, assigned_by=principal
         )
-        return OwnershipRead(
-            role=assignment.role, owner=OwnerRead.model_validate(assignment.owner)
-        )
+        return OwnershipRead(role=assignment.role, owner=OwnerRead.model_validate(assignment.owner))
 
     async def assign_owner_by_name(
         self, entity_id: uuid.UUID, owner_name: str, role: OwnershipRole, *, principal: str
@@ -152,23 +153,88 @@ class GovernanceService:
     # ------------------------------------------------------------------ #
     # Discovery
     # ------------------------------------------------------------------ #
-    async def sensitive_assets(self, query: SensitiveAssetsQuery) -> list[dict[str, object]]:
+    async def sensitive_assets(self, query: SensitiveAssetsQuery) -> list[SensitiveAssetRead]:
         """Answers "which datasets contain PII?"."""
         rows = await self.repo.find_entities_by_sensitivity(
             query.sensitivity, platform=query.platform, limit=query.limit
         )
         return [
-            {
-                "urn": entity.urn,
-                "qualified_name": entity.qualified_name,
-                "entity_type": entity.entity_type.value,
-                "platform": entity.platform,
-                "classification": classification.name,
-                "level": classification.level.value,
-                "regulation": classification.regulation,
-            }
-            for entity, classification in rows
+            SensitiveAssetRead(
+                assignment_id=assignment.id,
+                urn=entity.urn,
+                qualified_name=entity.qualified_name,
+                entity_type=entity.entity_type.value,
+                platform=entity.platform,
+                classification=classification.name,
+                level=classification.level.value,
+                regulation=classification.regulation,
+                method=assignment.method,
+                confidence=assignment.confidence,
+                confirmed=assignment.confirmed,
+            )
+            for entity, classification, assignment in rows
         ]
+
+    async def review_classification(
+        self, assignment_id: uuid.UUID, payload: ClassificationReviewRequest, *, principal: str
+    ) -> SensitiveAssetRead:
+        if payload.status == "CONFIRMED":
+            assignment = await self.repo.confirm_classification(assignment_id, assigned_by=principal)
+            if assignment is None:
+                raise NotFoundError(f"No classification assignment with id '{assignment_id}'.")
+            entity = assignment.entity
+            classification = assignment.classification
+            await self.audit_repo.record(
+                AuditAction.CLASSIFICATION_CONFIRMED,
+                principal=principal,
+                entity_id=entity.id,
+                entity_urn=entity.urn,
+                resource_type="classification_assignment",
+                summary=f"Confirmed '{classification.name}' on {entity.qualified_name}.",
+                payload={"assignment_id": str(assignment_id), "classification": classification.name},
+            )
+            return SensitiveAssetRead(
+                assignment_id=assignment.id,
+                urn=entity.urn,
+                qualified_name=entity.qualified_name,
+                entity_type=entity.entity_type.value,
+                platform=entity.platform,
+                classification=classification.name,
+                level=classification.level.value,
+                regulation=classification.regulation,
+                method=assignment.method,
+                confidence=assignment.confidence,
+                confirmed=assignment.confirmed,
+            )
+
+        assignment = await self.repo.get_classification_assignment(assignment_id)
+        if assignment is None:
+            raise NotFoundError(f"No classification assignment with id '{assignment_id}'.")
+        entity = assignment.entity
+        classification = assignment.classification
+        await self.repo.reject_classification(assignment_id)
+        await self.audit_repo.record(
+            AuditAction.CLASSIFICATION_REJECTED,
+            principal=principal,
+            entity_id=entity.id,
+            entity_urn=entity.urn,
+            resource_type="classification_assignment",
+            summary=f"Rejected '{classification.name}' on {entity.qualified_name}.",
+            payload={"assignment_id": str(assignment_id), "classification": classification.name},
+        )
+        return SensitiveAssetRead(
+            assignment_id=assignment.id,
+            urn=entity.urn,
+            qualified_name=entity.qualified_name,
+            entity_type=entity.entity_type.value,
+            platform=entity.platform,
+            classification=classification.name,
+            level=classification.level.value,
+            regulation=classification.regulation,
+            method=assignment.method,
+            confidence=assignment.confidence,
+            confirmed=False,
+        )
 
     async def unowned_assets(self, *, limit: int = 50) -> list[dict[str, str]]:
         """Governance gap report."""

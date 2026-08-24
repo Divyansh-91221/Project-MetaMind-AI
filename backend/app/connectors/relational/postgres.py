@@ -11,7 +11,7 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from app.connectors.base import (
     ConnectorCapabilities,
@@ -58,6 +58,27 @@ _VIEWS_SQL = text(
     """
 )
 
+_CONSTRAINTS_SQL = text(
+    """
+    SELECT
+        tc.table_schema,
+        tc.table_name,
+        tc.constraint_name,
+        tc.constraint_type,
+        array_agg(kcu.column_name ORDER BY kcu.ordinal_position) AS column_names
+    FROM information_schema.table_constraints tc
+    LEFT JOIN information_schema.key_column_usage kcu
+        ON tc.constraint_name = kcu.constraint_name
+       AND tc.table_schema = kcu.table_schema
+       AND tc.table_name = kcu.table_name
+    WHERE tc.table_schema NOT IN ('pg_catalog', 'information_schema')
+      AND tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE')
+      AND (:schema_filter IS NULL OR tc.table_schema = :schema_filter)
+    GROUP BY tc.table_schema, tc.table_name, tc.constraint_name, tc.constraint_type
+    ORDER BY tc.table_schema, tc.table_name, tc.constraint_name
+    """
+)
+
 
 class PostgresConnector(MetadataConnector):
     """Extracts databases, schemas, tables, views and columns from PostgreSQL."""
@@ -72,7 +93,7 @@ class PostgresConnector(MetadataConnector):
 
     def __init__(self, config: dict[str, Any] | None = None) -> None:
         super().__init__(config)
-        self._engine = None
+        self._engine: AsyncEngine | None = None
 
     def _dsn(self) -> str:
         dsn = str(self.config.get("dsn", ""))
@@ -80,7 +101,7 @@ class PostgresConnector(MetadataConnector):
             raise ConnectorError("PostgresConnector requires a 'dsn' configuration value.")
         return dsn.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-    def _get_engine(self) -> Any:
+    def _get_engine(self) -> AsyncEngine:
         if self._engine is None:
             self._engine = create_async_engine(self._dsn(), pool_pre_ping=True)
         return self._engine
@@ -90,7 +111,7 @@ class PostgresConnector(MetadataConnector):
             async with self._get_engine().connect() as conn:
                 await conn.execute(text("SELECT 1"))
             return True, "Connection successful."
-        except Exception as exc:  # noqa: BLE001 - reported to the caller
+        except Exception as exc:
             return False, str(exc)
 
     async def extract_entities(self) -> AsyncIterator[RawEntity]:
@@ -99,6 +120,18 @@ class PostgresConnector(MetadataConnector):
 
         try:
             async with self._get_engine().connect() as conn:
+                constraints_by_table: dict[tuple[str, str], list[dict[str, object]]] = {}
+                for schema, table, constraint_name, constraint_type, column_names in (
+                    await conn.execute(_CONSTRAINTS_SQL, {"schema_filter": schema_filter})
+                ).all():
+                    constraints_by_table.setdefault((schema, table), []).append(
+                        {
+                            "name": constraint_name,
+                            "type": constraint_type,
+                            "columns": list(column_names or []),
+                        }
+                    )
+
                 yield RawEntity(
                     entity_type=EntityType.DATABASE,
                     name=database,
@@ -120,15 +153,17 @@ class PostgresConnector(MetadataConnector):
                             platform=self.platform.value,
                         )
                     yield RawEntity(
-                        entity_type=(
-                            EntityType.VIEW if table_type == "VIEW" else EntityType.TABLE
-                        ),
+                        entity_type=(EntityType.VIEW if table_type == "VIEW" else EntityType.TABLE),
                         name=table,
                         qualified_name=f"{database}.{schema}.{table}",
                         parent_qualified_name=f"{database}.{schema}",
                         parent_entity_type=EntityType.SCHEMA,
                         platform=self.platform.value,
-                        properties={"table_type": table_type},
+                        properties={
+                            "table_type": table_type,
+                            "constraints": constraints_by_table.get((schema, table), []),
+                        },
+                        constraints=constraints_by_table.get((schema, table), []),
                     )
 
                 columns = (await conn.execute(_COLUMNS_SQL, {"schema_filter": schema_filter})).all()
@@ -144,10 +179,17 @@ class PostgresConnector(MetadataConnector):
                         data_type=data_type,
                         is_nullable=(nullable == "YES"),
                         ordinal_position=position,
+                        properties={
+                            "constraints": [
+                                constraint
+                                for constraint in constraints_by_table.get((schema, table), [])
+                                if column in (constraint.get("columns") or [])
+                            ]
+                        },
                     )
         except ConnectorError:
             raise
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             raise ConnectorError(f"PostgreSQL metadata extraction failed: {exc}") from exc
 
     async def extract_sql(self) -> AsyncIterator[SqlArtifact]:

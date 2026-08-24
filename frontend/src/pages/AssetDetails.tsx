@@ -3,12 +3,14 @@ import { useSearchParams } from 'react-router-dom';
 import { useApi } from '@/hooks';
 import { metadataApi } from '@/services/metadataApi';
 import { governanceApi, qualityApi } from '@/services/governanceApi';
-import { AsyncBoundary, Card, EmptyState, PageHeader, SearchBar } from '@/components/common';
+import { healthApi } from '@/services/connectorsApi';
+import { AsyncBoundary, Card, EmptyState, HealthScoreGauge, PageHeader, SearchBar } from '@/components/common';
 import { Badge } from '@/components/common/Badge';
 import { AssetHeader, ColumnTable } from '@/components/metadata';
 import { GovernancePanel } from '@/components/governance';
-import { useAppContext } from '@/app/providers';
+import { useAppContext } from '@/app/appContext';
 import { formatAgeHours, formatDate } from '@/utils/format';
+import { buildAssetEvidence } from '@/utils/explainability';
 
 /** Full asset view: technical metadata, business context, governance and quality. */
 export function AssetDetails() {
@@ -26,6 +28,7 @@ export function AssetDetails() {
     [urn],
   );
   const quality = useApi(() => (urn ? qualityApi.profile(urn) : Promise.resolve(null)), [urn]);
+  const health = useApi(() => (urn ? healthApi.score(urn) : Promise.resolve(null)), [urn]);
 
   if (!urn) {
     return (
@@ -45,6 +48,28 @@ export function AssetDetails() {
         data && (
           <>
             <AssetHeader asset={data} />
+
+            {health.data && (
+              <Card className="health-card">
+                <div className="row" style={{ justifyContent: 'space-between' }}>
+                  <div>
+                    <h3 style={{ marginBottom: 4 }}>Health score</h3>
+                    <p className="faint small" style={{ marginBottom: 0 }}>
+                      {health.data.label} - freshness, quality, ownership, governance and lineage,
+                      weighted.
+                    </p>
+                  </div>
+                  <HealthScoreGauge total={health.data.total} label={health.data.label} />
+                </div>
+                <div className="row" style={{ marginTop: 10 }}>
+                  {Object.entries(health.data.components).map(([key, value]) => (
+                    <Badge key={key} title={`${Math.round((health.data!.weights[key] ?? 0) * 100)}% weight`}>
+                      {key} · {value}
+                    </Badge>
+                  ))}
+                </div>
+              </Card>
+            )}
 
             <div className="grid grid-2">
               <Card title="Business context">
@@ -134,6 +159,27 @@ export function AssetDetails() {
               >
                 {(profile) => profile && <GovernancePanel profile={profile} />}
               </AsyncBoundary>
+            </Card>
+
+            <Card title="Why MetaMind knows this">
+              <p className="faint small">
+                Every claim below cites the exact catalog, lineage, governance or quality record
+                behind it.
+              </p>
+              {buildAssetEvidence(data, governance.data ?? null, quality.data ?? null).map(
+                (item, index) => (
+                  <div className="evidence-item" key={`${item.title}-${index}`}>
+                    <div className="row" style={{ justifyContent: 'space-between' }}>
+                      <span className="evidence-title">{item.title}</span>
+                      {item.inferred && <Badge tone="warn">Awaiting review</Badge>}
+                    </div>
+                    <div className="evidence-detail">{item.detail}</div>
+                    <div className="evidence-source">
+                      {item.kind} · {item.source}
+                    </div>
+                  </div>
+                ),
+              )}
             </Card>
           </>
         )

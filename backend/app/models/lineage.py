@@ -23,7 +23,6 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     DateTime,
-    Enum as SAEnum,
     Float,
     ForeignKey,
     Index,
@@ -31,7 +30,11 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
+from sqlalchemy import (
+    Enum as SAEnum,
+)
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.constants import (
@@ -103,7 +106,9 @@ class LineageEdge(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     verification_note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    last_observed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_observed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     observation_count: Mapped[int] = mapped_column(default=1, nullable=False)
 
     evidence: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)

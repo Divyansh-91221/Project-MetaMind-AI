@@ -43,7 +43,7 @@ class QualityProcessor:
                     )
                 )
                 result.recorded += 1
-            except Exception as exc:  # noqa: BLE001 - metrics must not fail the whole run
+            except Exception as exc:
                 message = f"{metric.entity_urn} / {metric.metric_name}: {exc}"
                 result.errors.append(message)
                 logger.warning("quality_metric_failed", extra={"error": message})

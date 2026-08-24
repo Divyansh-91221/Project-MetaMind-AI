@@ -6,6 +6,8 @@ import type {
   MetadataEntity,
   MetadataEntityDetail,
   Page,
+  RetrievalResponse,
+  SearchIndexReport,
   SearchResponse,
 } from '@/types';
 
@@ -40,6 +42,22 @@ export const metadataApi = {
 
   search: (q: string, mode: 'keyword' | 'semantic' | 'hybrid' = 'hybrid', limit = 20) =>
     api.get<SearchResponse>('/search', { q, mode, limit }),
+
+  retrieve: (q: string, topK = 8) =>
+    api.get<RetrievalResponse>('/search/retrieve', { q, top_k: topK }),
+
+  reindex: (payload?: {
+    rebuild?: boolean;
+    include_glossary?: boolean;
+    include_documents?: boolean;
+    entity_urns?: string[];
+  }) =>
+    api.post<SearchIndexReport>('/search/reindex', {
+      rebuild: payload?.rebuild ?? true,
+      include_glossary: payload?.include_glossary ?? true,
+      include_documents: payload?.include_documents ?? true,
+      entity_urns: payload?.entity_urns ?? [],
+    }),
 
   connectors: () => api.get<ConnectorDescriptor[]>('/connectors'),
 };

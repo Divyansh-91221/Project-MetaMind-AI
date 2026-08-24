@@ -129,9 +129,7 @@ class OpenLineageConnector(MetadataConnector):
                     platform=platform,
                     properties={"namespace": dataset.get("namespace")},
                 )
-                fields = (
-                    (dataset.get("facets") or {}).get("schema", {}).get("fields", [])
-                )
+                fields = (dataset.get("facets") or {}).get("schema", {}).get("fields", [])
                 for index, field in enumerate(fields):
                     field_name = str(field.get("name", ""))
                     if not field_name:

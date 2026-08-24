@@ -158,9 +158,7 @@ class ClassificationService:
             classification = await self.repo.get_classification(suggestion.classification_name)
             if classification is None:
                 await self.ensure_definitions()
-                classification = await self.repo.get_classification(
-                    suggestion.classification_name
-                )
+                classification = await self.repo.get_classification(suggestion.classification_name)
             if classification is None:  # pragma: no cover - defensive
                 continue
             await self.repo.assign_classification(

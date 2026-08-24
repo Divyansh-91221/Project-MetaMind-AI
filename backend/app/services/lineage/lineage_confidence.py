@@ -79,17 +79,18 @@ class LineageConfidenceScorer:
             bonus = min(0.08, 0.04 * (signals.corroborating_methods - 1))
             score += bonus
             explanation.append(
-                f"Corroborated by {signals.corroborating_methods} independent methods (+{bonus:.2f})."
+                f"Corroborated by {signals.corroborating_methods} independent methods "
+                f"(+{bonus:.2f})."
             )
         if signals.observation_count > 3:
             score += 0.02
-            explanation.append(
-                f"Observed {signals.observation_count} times across runs (+0.02)."
-            )
+            explanation.append(f"Observed {signals.observation_count} times across runs (+0.02).")
 
         if signals.method is LineageMethod.AI_INFERRED:
             score -= 0.05
-            explanation.append("AI-inferred relationship: penalised and flagged for review (-0.05).")
+            explanation.append(
+                "AI-inferred relationship: penalised and flagged for review (-0.05)."
+            )
         if signals.name_similarity_only:
             score -= 0.15
             explanation.append("Supported only by name similarity (-0.15).")
@@ -121,7 +122,9 @@ class LineageConfidenceScorer:
                 has_pipeline_context=bool(pipeline_urn),
                 has_source_evidence=bool(evidence.get("sql") or evidence.get("source")),
                 exact_name_match=bool(
-                    source_column and target_column and source_column.lower() == target_column.lower()
+                    source_column
+                    and target_column
+                    and source_column.lower() == target_column.lower()
                 ),
                 name_similarity_only=str(evidence.get("source", "")).startswith("name-similarity"),
                 observation_count=observation_count,

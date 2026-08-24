@@ -7,6 +7,7 @@ happen here, so handlers stay thin.
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from dataclasses import dataclass
 from typing import Annotated
 
 from fastapi import Depends, Query, Request
@@ -75,16 +76,24 @@ def get_graph() -> GraphStore:
 GraphDep = Annotated[GraphStore, Depends(get_graph)]
 
 
-class PaginationQuery:
-    """Reusable limit/offset query parameters."""
+@dataclass(slots=True)
+class PageParams:
+    """Resolved limit/offset for a list endpoint."""
 
-    def __init__(
-        self,
-        limit: Annotated[int, Query(ge=1, le=500, description="Page size.")] = 50,
-        offset: Annotated[int, Query(ge=0, description="Number of records to skip.")] = 0,
-    ) -> None:
-        self.limit = limit
-        self.offset = offset
+    limit: int
+    offset: int
 
 
-Pagination = Annotated[PaginationQuery, Depends(PaginationQuery)]
+def pagination_params(
+    limit: Annotated[int, Query(ge=1, le=500, description="Page size.")] = 50,
+    offset: Annotated[int, Query(ge=0, description="Number of records to skip.")] = 0,
+) -> PageParams:
+    """Reusable pagination query parameters.
+
+    A function rather than a class dependency: with ``from __future__ import annotations``
+    FastAPI resolves string annotations via ``__globals__``, which classes do not have.
+    """
+    return PageParams(limit=limit, offset=offset)
+
+
+Pagination = Annotated[PageParams, Depends(pagination_params)]

@@ -28,7 +28,7 @@ class LineageTool(Tool):
         super().__init__(session)
         self.service = LineageService(session)
 
-    async def run(
+    async def run(  # type: ignore[override]
         self,
         *,
         urn: str,
@@ -94,9 +94,11 @@ class LineageTool(Tool):
 
 def _describe(edge: LineageEdgeRead, source: str, target: str) -> str:
     parts = [
-        f"{target} is derived from {source}"
-        if edge.relationship.value == "DERIVED_FROM"
-        else f"{source} {edge.relationship.value.replace('_', ' ').lower()} {target}",
+        (
+            f"{target} is derived from {source}"
+            if edge.relationship.value == "DERIVED_FROM"
+            else f"{source} {edge.relationship.value.replace('_', ' ').lower()} {target}"
+        ),
         f"at {edge.level.value.lower()} level",
         f"extracted by {edge.method.value}",
         f"confidence {edge.confidence:.2f}",

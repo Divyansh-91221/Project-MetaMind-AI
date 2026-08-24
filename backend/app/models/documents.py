@@ -11,13 +11,26 @@ import uuid
 from typing import Any
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Enum as SAEnum, ForeignKey, Index, Integer, String, Text
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
+from sqlalchemy import Enum as SAEnum
+from sqlalchemy import ForeignKey, Index, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.config import settings
 from app.core.constants import DocumentType
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+
+PGVECTOR_ENABLED = settings.vector_store == "pgvector"
+"""Whether the schema should depend on the pgvector extension.
+
+The extension is only needed when pgvector is the configured vector store. With
+``VECTOR_STORE=memory`` the platform runs on a stock PostgreSQL instance, which matters for
+managed services and restricted environments that cannot install extensions.
+"""
+
+EMBEDDING_COLUMN_TYPE = Vector(settings.embedding_dimension) if PGVECTOR_ENABLED else JSONB()
+"""Shared by the ORM model and the initial migration so the two cannot diverge."""
 
 
 class Document(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -65,9 +78,7 @@ class DocumentChunk(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     document_type: Mapped[DocumentType] = mapped_column(
         SAEnum(DocumentType, name="document_type", create_type=False), nullable=False
     )
-    embedding: Mapped[list[float] | None] = mapped_column(
-        Vector(settings.embedding_dimension), nullable=True
-    )
+    embedding: Mapped[list[float] | None] = mapped_column(EMBEDDING_COLUMN_TYPE, nullable=True)
     chunk_metadata: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
 
     document: Mapped[Document] = relationship(back_populates="chunks")

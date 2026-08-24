@@ -60,9 +60,7 @@ class LLMProvider(Protocol):
         self, messages: list[LLMMessage], *, temperature: float | None = None
     ) -> LLMResponse: ...
 
-    async def structured(
-        self, messages: list[LLMMessage], response_model: type[T]
-    ) -> T | None: ...
+    async def structured(self, messages: list[LLMMessage], response_model: type[T]) -> T | None: ...
 
 
 class MockLLMProvider:
@@ -88,9 +86,7 @@ class MockLLMProvider:
         content = match.group("body").strip() if match else last_user.strip()
         return LLMResponse(content=content, model=self.model, finish_reason="mock")
 
-    async def structured(
-        self, messages: list[LLMMessage], response_model: type[T]
-    ) -> T | None:
+    async def structured(self, messages: list[LLMMessage], response_model: type[T]) -> T | None:
         return None
 
 
@@ -109,7 +105,7 @@ class OpenAICompatibleProvider:
 
     def _get_client(self) -> Any:
         if self._client is None:
-            assert settings.llm_api_key is not None  # noqa: S101 - checked in __init__
+            assert settings.llm_api_key is not None
             key = settings.llm_api_key.get_secret_value()
             if self._azure:
                 from openai import AsyncAzureOpenAI
@@ -139,14 +135,15 @@ class OpenAICompatibleProvider:
             response = await self._get_client().chat.completions.create(
                 model=self.model,
                 messages=[message.to_dict() for message in messages],
-                temperature=(
-                    settings.llm_temperature if temperature is None else temperature
-                ),
+                temperature=(settings.llm_temperature if temperature is None else temperature),
                 max_tokens=settings.llm_max_tokens,
             )
-        except Exception as exc:  # noqa: BLE001 - normalised into a domain error
+        except Exception as exc:
             logger.error("llm_request_failed", extra={"error": str(exc)})
-            raise ProviderError("LLM request failed.") from exc
+            raise ProviderError(
+                "LLM request failed.",
+                details={"provider": self.name, "reason": type(exc).__name__},
+            ) from exc
 
         choice = response.choices[0]
         usage = getattr(response, "usage", None)
@@ -158,9 +155,7 @@ class OpenAICompatibleProvider:
             finish_reason=choice.finish_reason or "stop",
         )
 
-    async def structured(
-        self, messages: list[LLMMessage], response_model: type[T]
-    ) -> T | None:
+    async def structured(self, messages: list[LLMMessage], response_model: type[T]) -> T | None:
         """Request JSON matching the Pydantic model, tolerating providers without schema support."""
         schema_hint = LLMMessage(
             role="system",
@@ -180,7 +175,7 @@ class OpenAICompatibleProvider:
             return None
         try:
             return response_model.model_validate(payload)
-        except Exception as exc:  # noqa: BLE001 - malformed output must not break the request
+        except Exception as exc:
             logger.warning("llm_structured_output_invalid", extra={"error": str(exc)})
             return None
 
@@ -190,7 +185,7 @@ _provider: LLMProvider | None = None
 
 def get_llm_provider() -> LLMProvider:
     """Return the configured provider (cached for the process lifetime)."""
-    global _provider  # noqa: PLW0603
+    global _provider
     if _provider is None:
         if settings.llm_provider == "openai":
             _provider = OpenAICompatibleProvider(azure=False)
@@ -204,5 +199,5 @@ def get_llm_provider() -> LLMProvider:
 
 def set_llm_provider(provider: LLMProvider) -> None:
     """Override the provider (used by tests)."""
-    global _provider  # noqa: PLW0603
+    global _provider
     _provider = provider

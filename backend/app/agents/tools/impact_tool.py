@@ -22,7 +22,7 @@ class ImpactTool(Tool):
         super().__init__(session)
         self.service = ImpactService(session)
 
-    async def run(self, *, urn: str, depth: int = 8, **_: Any) -> ToolResult:
+    async def run(self, *, urn: str, depth: int = 8, **_: Any) -> ToolResult:  # type: ignore[override]
         try:
             result = await self.service.analyze(urn, depth=depth)
         except NotFoundError as exc:
@@ -60,7 +60,11 @@ class ImpactTool(Tool):
                             if asset.owners
                             else ", no owner assigned"
                         )
-                        + ("; includes AI-inferred lineage." if asset.contains_inferred_lineage else ".")
+                        + (
+                            "; includes AI-inferred lineage."
+                            if asset.contains_inferred_lineage
+                            else "."
+                        )
                     ),
                     urn=asset.urn,
                     source="lineage graph",

@@ -67,9 +67,9 @@ class SemanticSearch:
                     score=score,
                     semantic_score=score,
                     matched_on=["semantic"],
-                    highlights=[truncate(entity.description or "", 200)]
-                    if entity.description
-                    else [],
+                    highlights=(
+                        [truncate(entity.description or "", 200)] if entity.description else []
+                    ),
                 )
             )
 

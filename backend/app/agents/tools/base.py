@@ -46,7 +46,13 @@ class Tool(abc.ABC):
 
     @abc.abstractmethod
     async def run(self, **kwargs: Any) -> ToolResult:
-        """Execute the tool. Implementations must never raise for 'not found' cases."""
+        """Execute the tool. Implementations must never raise for 'not found' cases.
+
+        Subclasses declare their real parameters as keyword-only arguments and carry
+        ``# type: ignore[override]``: tools are dispatched dynamically from the agent's plan
+        dict, so the narrower signature is intentional and is what makes each tool readable
+        and independently testable.
+        """
 
     async def invoke(self, **kwargs: Any) -> tuple[ToolResult, ToolCallTrace]:
         """Run the tool with timing, error capture and a trace record for observability."""
@@ -61,7 +67,7 @@ class Tool(abc.ABC):
                 duration_ms=round((time.perf_counter() - started) * 1000, 2),
             )
             return result, trace
-        except Exception as exc:  # noqa: BLE001 - a failing tool degrades, never crashes
+        except Exception as exc:
             logger.warning("tool_failed", extra={"tool": self.name, "error": str(exc)})
             trace = ToolCallTrace(
                 tool=self.name,

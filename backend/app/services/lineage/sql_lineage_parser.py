@@ -94,7 +94,7 @@ class SqlLineageParser:
             output.statements_parsed += 1
             try:
                 self._parse_statement(statement, artifact, output)
-            except Exception as exc:  # noqa: BLE001 - one bad statement must not fail the run
+            except Exception as exc:
                 output.warnings.append(f"Statement skipped: {exc}")
                 logger.warning(
                     "sql_statement_skipped",
@@ -112,10 +112,13 @@ class SqlLineageParser:
         if target is None or select is None:
             return
 
+        dialect = _normalize_dialect(artifact.dialect)
         target_ref = _table_ref(target, artifact)
         source_tables = _source_tables(select, artifact)
         if not source_tables:
-            output.warnings.append(f"No source tables found for target {target_ref.qualified_name}.")
+            output.warnings.append(
+                f"No source tables found for target {target_ref.qualified_name}."
+            )
             return
 
         observed_at = utcnow()
@@ -126,9 +129,15 @@ class SqlLineageParser:
         }
 
         # --- Table level ------------------------------------------------
+        # source_tables maps several keys (alias, bare name, qualified name) to the same
+        # table, so collapse to one edge per distinct source.
+        seen_sources: set[str] = set()
         for alias, source_ref in source_tables.items():
             if source_ref.qualified_name == target_ref.qualified_name:
                 continue
+            if source_ref.qualified_name in seen_sources:
+                continue
+            seen_sources.add(source_ref.qualified_name)
             output.table_edges.append(
                 RawLineage(
                     source_urn=source_ref.urn(),
@@ -156,18 +165,18 @@ class SqlLineageParser:
             target_column = _target_column_name(projection, target_columns, index)
             if not target_column:
                 continue
-            transformation = _transformation(projection)
+            transformation = _transformation(projection, dialect)
 
             for column in projection.find_all(exp.Column):
-                source_ref = _resolve_column_table(column, source_tables)
-                if source_ref is None:
+                column_ref = _resolve_column_table(column, source_tables)
+                if column_ref is None:
                     output.warnings.append(
                         f"Could not resolve source table for column '{column.sql()}'."
                     )
                     continue
                 output.column_edges.append(
                     RawLineage(
-                        source_urn=source_ref.column_urn(column.name),
+                        source_urn=column_ref.column_urn(column.name),
                         target_urn=target_ref.column_urn(target_column),
                         relationship=RelationshipType.DERIVED_FROM,
                         level=LineageLevel.COLUMN,
@@ -287,9 +296,12 @@ def _target_column_name(
     return name or None
 
 
-def _transformation(projection: exp.Expression) -> str | None:
-    """Return the SQL expression when the projection is more than a plain column reference."""
+def _transformation(projection: exp.Expression, dialect: str | None = None) -> str | None:
+    """Return the SQL expression when the projection is more than a plain column reference.
+
+    Rendered in the source dialect so the stored transformation matches the original code.
+    """
     inner = projection.this if isinstance(projection, exp.Alias) else projection
     if isinstance(inner, exp.Column):
         return None
-    return inner.sql()
+    return inner.sql(dialect=dialect)

@@ -58,7 +58,9 @@ class MetadataSearch:
             score, matched_on = 0.3, ["fuzzy"]
 
         highlights = (
-            [truncate(entity.description or "", 200)] if entity.description and lowered in description else []
+            [truncate(entity.description or "", 200)]
+            if entity.description and lowered in description
+            else []
         )
 
         return SearchHit(

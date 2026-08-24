@@ -1,20 +1,9 @@
 import { BrowserRouter } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { createContext, useContext, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-interface AppContextValue {
-  /** The asset the user is currently looking at. Passed to the Copilot as page context. */
-  activeUrn: string | null;
-  setActiveUrn: (urn: string | null) => void;
-}
-
-const AppContext = createContext<AppContextValue | null>(null);
-
-export function useAppContext(): AppContextValue {
-  const context = useContext(AppContext);
-  if (!context) throw new Error('useAppContext must be used inside <Providers>.');
-  return context;
-}
+import { AppContext } from './appContext';
+import type { ThemePreference } from './appContext';
 
 /**
  * Application-wide providers.
@@ -24,7 +13,26 @@ export function useAppContext(): AppContextValue {
  */
 export function Providers({ children }: { children: ReactNode }) {
   const [activeUrn, setActiveUrn] = useState<string | null>(null);
-  const value = useMemo(() => ({ activeUrn, setActiveUrn }), [activeUrn]);
+  const [theme, setTheme] = useState<ThemePreference>(() => {
+    if (typeof window === 'undefined') return 'dark';
+    const saved = window.localStorage.getItem('metamind-theme');
+    if (saved === 'light' || saved === 'dark' || saved === 'system') return saved;
+    return 'dark';
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('metamind-theme', theme);
+    const root = document.documentElement;
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const resolved = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme;
+    root.setAttribute('data-theme', resolved);
+  }, [theme]);
+
+  const value = useMemo(
+    () => ({ activeUrn, setActiveUrn, theme, setTheme }),
+    [activeUrn, theme],
+  );
 
   return (
     <BrowserRouter>

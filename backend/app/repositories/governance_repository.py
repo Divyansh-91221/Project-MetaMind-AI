@@ -44,7 +44,9 @@ class GovernanceRepository:
         return owner
 
     async def list_owners(self) -> list[Owner]:
-        return list((await self.session.execute(select(Owner).order_by(Owner.name))).scalars().all())
+        return list(
+            (await self.session.execute(select(Owner).order_by(Owner.name))).scalars().all()
+        )
 
     async def owners_for_entity(self, entity_id: uuid.UUID) -> list[EntityOwner]:
         stmt = (
@@ -117,6 +119,21 @@ class GovernanceRepository:
         )
         return list((await self.session.execute(stmt)).unique().scalars().all())
 
+    async def classifications_for_entities(
+        self, entity_ids: list[uuid.UUID]
+    ) -> list[EntityClassification]:
+        if not entity_ids:
+            return []
+        stmt = (
+            select(EntityClassification)
+            .where(EntityClassification.entity_id.in_(entity_ids))
+            .options(
+                joinedload(EntityClassification.classification),
+                joinedload(EntityClassification.entity),
+            )
+        )
+        return list((await self.session.execute(stmt)).unique().scalars().all())
+
     async def assign_classification(
         self,
         entity_id: uuid.UUID,
@@ -153,12 +170,45 @@ class GovernanceRepository:
         await self.session.flush()
         return assignment
 
+    async def get_classification_assignment(
+        self, assignment_id: uuid.UUID
+    ) -> EntityClassification | None:
+        stmt = (
+            select(EntityClassification)
+            .where(EntityClassification.id == assignment_id)
+            .options(
+                joinedload(EntityClassification.classification),
+                joinedload(EntityClassification.entity),
+            )
+        )
+        return (await self.session.execute(stmt)).unique().scalar_one_or_none()
+
+    async def confirm_classification(
+        self, assignment_id: uuid.UUID, *, assigned_by: str | None = None
+    ) -> EntityClassification | None:
+        assignment = await self.get_classification_assignment(assignment_id)
+        if assignment is None:
+            return None
+        assignment.confirmed = True
+        if assigned_by is not None:
+            assignment.assigned_by = assigned_by
+        await self.session.flush()
+        return assignment
+
+    async def reject_classification(self, assignment_id: uuid.UUID) -> bool:
+        assignment = await self.get_classification_assignment(assignment_id)
+        if assignment is None:
+            return False
+        await self.session.delete(assignment)
+        await self.session.flush()
+        return True
+
     async def find_entities_by_sensitivity(
         self, sensitivity: SensitivityTag, *, platform: str | None = None, limit: int = 50
-    ) -> list[tuple[MetadataEntity, Classification]]:
+    ) -> list[tuple[MetadataEntity, Classification, EntityClassification]]:
         """Answers "which datasets contain PII?"."""
         stmt = (
-            select(MetadataEntity, Classification)
+            select(MetadataEntity, Classification, EntityClassification)
             .join(EntityClassification, EntityClassification.entity_id == MetadataEntity.id)
             .join(Classification, Classification.id == EntityClassification.classification_id)
             .where(
@@ -170,7 +220,7 @@ class GovernanceRepository:
         )
         if platform:
             stmt = stmt.where(MetadataEntity.platform == platform)
-        return [(row[0], row[1]) for row in (await self.session.execute(stmt)).all()]
+        return [(row[0], row[1], row[2]) for row in (await self.session.execute(stmt)).all()]
 
     async def unowned_entities(self, *, limit: int = 50) -> list[MetadataEntity]:
         """Governance gap report: assets without any accountable owner."""

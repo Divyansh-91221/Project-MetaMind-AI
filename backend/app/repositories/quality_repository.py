@@ -47,9 +47,7 @@ class QualityRepository:
         await self.session.flush()
         return metric
 
-    async def latest_metrics(
-        self, entity_id: uuid.UUID, *, limit: int = 50
-    ) -> list[QualityMetric]:
+    async def latest_metrics(self, entity_id: uuid.UUID, *, limit: int = 50) -> list[QualityMetric]:
         stmt = (
             select(QualityMetric)
             .where(QualityMetric.entity_id == entity_id)

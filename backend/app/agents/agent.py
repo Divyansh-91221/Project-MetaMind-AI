@@ -34,6 +34,7 @@ from app.agents.state import AgentState, ToolPlanStep
 from app.agents.tools import build_toolbox
 from app.ai.llm import LLMProvider, get_llm_provider
 from app.core.constants import AuditAction, CopilotIntent, Direction, EntityType
+from app.core.exceptions import ProviderError
 from app.core.logging import get_logger
 from app.repositories.audit_repository import AuditRepository
 from app.schemas.copilot import (
@@ -50,6 +51,10 @@ logger = get_logger(__name__)
 # Rule-based intent patterns. Ordered: the first match wins, most specific first.
 _INTENT_PATTERNS: tuple[tuple[CopilotIntent, re.Pattern[str]], ...] = (
     (
+        CopilotIntent.UNIQUENESS,
+        re.compile(r"\b(unique|uniqueness|duplicate|duplicates|primary key|primary-key)\b"),
+    ),
+    (
         CopilotIntent.IMPACT_ANALYSIS,
         re.compile(r"\b(break|impact|affected|blast radius|if .*(change|drop|rename|delete))\b"),
     ),
@@ -63,16 +68,24 @@ _INTENT_PATTERNS: tuple[tuple[CopilotIntent, re.Pattern[str]], ...] = (
     ),
     (CopilotIntent.OWNERSHIP, re.compile(r"\b(own|owner|owns|steward|accountable|responsible)\b")),
     (
-        CopilotIntent.GLOSSARY,
-        re.compile(r"\b(business definition|definition of|kpi|metric|means|calculated)\b"),
-    ),
-    (
         CopilotIntent.DOWNSTREAM_LINEAGE,
-        re.compile(r"\b(what uses|who uses|consumes|downstream|depend on this|dashboards? depend)\b"),
+        re.compile(
+            r"\b(what uses|who uses|consumes|downstream|depend on this|dashboards? depend)\b"
+        ),
     ),
     (
         CopilotIntent.UPSTREAM_LINEAGE,
-        re.compile(r"\b(where does .* come from|upstream|source of|sourced|derived from|lineage)\b"),
+        re.compile(
+            r"\b(where does .* come from|upstream|source of|sourced|derived from|lineage)\b"
+        ),
+    ),
+    # Checked after lineage: "show me the lineage of the revenue KPI" is a lineage question,
+    # not a request for the KPI's business definition.
+    (
+        CopilotIntent.GLOSSARY,
+        re.compile(
+            r"\b(business definition|business meaning|definition of|means|calculated|calculation)\b"
+        ),
     ),
     (CopilotIntent.DEFINITION, re.compile(r"\b(what is|what's|describe|explain|tell me about)\b")),
 )
@@ -236,6 +249,22 @@ class MetadataCopilotAgent:
                     "Origin gives essential context for a definition.",
                 )
             )
+        elif intent is CopilotIntent.UNIQUENESS:
+            plan.append(ToolPlanStep("metadata_lookup", {"urn": urn}, "Identify the asset."))
+            plan.append(
+                ToolPlanStep(
+                    "uniqueness_lookup",
+                    {"urn": urn},
+                    "Prove uniqueness from schema constraints.",
+                )
+            )
+            plan.append(
+                ToolPlanStep(
+                    "lineage_lookup",
+                    {"urn": urn, "direction": Direction.UPSTREAM.value, "depth": 3},
+                    "Only include lineage if it explains the source of a key.",
+                )
+            )
         elif intent is CopilotIntent.UPSTREAM_LINEAGE:
             plan.append(ToolPlanStep("metadata_lookup", {"urn": urn}, "Identify the asset."))
             plan.append(
@@ -260,7 +289,9 @@ class MetadataCopilotAgent:
                 ToolPlanStep("impact_analysis", {"urn": urn, "depth": 8}, "Compute blast radius.")
             )
         elif intent is CopilotIntent.OWNERSHIP:
-            plan.append(ToolPlanStep("governance_lookup", {"urn": urn}, "Ownership and stewardship."))
+            plan.append(
+                ToolPlanStep("governance_lookup", {"urn": urn}, "Ownership and stewardship.")
+            )
             plan.append(ToolPlanStep("metadata_lookup", {"urn": urn}, "Asset context."))
         elif intent is CopilotIntent.CLASSIFICATION:
             if _asks_for_sensitive_inventory(state.query):
@@ -274,7 +305,9 @@ class MetadataCopilotAgent:
             plan.append(ToolPlanStep("governance_lookup", {"urn": urn}, "Classification profile."))
         elif intent is CopilotIntent.QUALITY:
             plan.append(
-                ToolPlanStep("quality_lookup", {"urn": urn, "explain": True}, "Freshness and cause.")
+                ToolPlanStep(
+                    "quality_lookup", {"urn": urn, "explain": True}, "Freshness and cause."
+                )
             )
             plan.append(
                 ToolPlanStep(
@@ -337,8 +370,17 @@ class MetadataCopilotAgent:
             state.answer = REFUSAL_NO_EVIDENCE
             return
 
-        response = await self.llm.complete(build_answer_messages(state, draft))
-        state.answer = response.content.strip() or draft
+        # The draft is already a complete, evidence-backed answer, so a model outage must
+        # degrade the phrasing - never the response.
+        try:
+            response = await self.llm.complete(build_answer_messages(state, draft))
+            state.answer = response.content.strip() or draft
+        except ProviderError as exc:
+            logger.warning("llm_synthesis_failed", extra={"reason": str(exc)})
+            state.add_warnings(
+                ["The language model was unavailable; showing the evidence-based answer."]
+            )
+            state.answer = draft
 
     def _compose_draft(self, state: AgentState) -> str:
         """Build a factual answer directly from evidence.
@@ -363,6 +405,7 @@ class MetadataCopilotAgent:
 
         headings = {
             "entity": "Definition",
+            "constraint": "Constraints",
             "glossary": "Business meaning",
             "lineage": "Lineage",
             "impact": "Impact",
@@ -381,9 +424,7 @@ class MetadataCopilotAgent:
 
         lines.append(
             "\n_Sources: "
-            + ", ".join(
-                sorted({item.source for item in state.evidence if item.source})
-            )
+            + ", ".join(sorted({item.source for item in state.evidence if item.source}))
             + "._"
         )
         return "\n".join(lines)

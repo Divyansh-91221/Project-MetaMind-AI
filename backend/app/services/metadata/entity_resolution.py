@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from itertools import pairwise
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -122,13 +123,18 @@ class EntityResolutionService:
 
         # Multi-word names such as "monthly revenue" that the tokenizer split apart.
         words = [w.lower() for w in re.findall(r"[A-Za-z]+", text)]
-        for first, second in zip(words, words[1:], strict=False):
+        for first, second in pairwise(words):
             if first in _STOPWORDS or second in _STOPWORDS:
                 continue
             mentions.append(f"{first} {second}")
 
         seen: set[str] = set()
-        return [m for m in mentions if not (m in seen or seen.add(m))]
+        unique: list[str] = []
+        for mention in mentions:
+            if mention not in seen:
+                seen.add(mention)
+                unique.append(mention)
+        return unique
 
     async def resolve(
         self, mention: str, *, limit: int = 5, entity_types: list[EntityType] | None = None
@@ -163,9 +169,7 @@ class EntityResolutionService:
             ranked = preferred + [c for c in ranked if c not in preferred]
         return ranked[:limit]
 
-    async def resolve_query(
-        self, text: str, *, limit: int = 5
-    ) -> list[ResolutionCandidate]:
+    async def resolve_query(self, text: str, *, limit: int = 5) -> list[ResolutionCandidate]:
         """Resolve every mention in a question and return the best overall candidates."""
         results: dict[str, ResolutionCandidate] = {}
         for mention in self.extract_mentions(text)[:8]:

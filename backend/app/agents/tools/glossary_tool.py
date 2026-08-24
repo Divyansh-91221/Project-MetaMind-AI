@@ -22,7 +22,7 @@ class GlossaryTool(Tool):
         super().__init__(session)
         self.service = GlossaryService(session)
 
-    async def run(self, *, term: str, **_: Any) -> ToolResult:
+    async def run(self, *, term: str, **_: Any) -> ToolResult:  # type: ignore[override]
         try:
             detail = await self.service.get_term(term)
         except NotFoundError:

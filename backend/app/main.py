@@ -38,11 +38,21 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     graph = get_graph_store()
     try:
         await graph.connect()
-    except Exception as exc:  # noqa: BLE001 - the API still serves catalog endpoints
+    except Exception as exc:
         logger.warning("graph_unavailable_at_startup", extra={"error": str(exc)})
 
-    if not await check_database():
+    database_ready = await check_database()
+    if not database_ready:
         logger.error("postgres_unavailable_at_startup")
+    elif settings.graph_store == "memory":
+        # The in-memory graph lives in this process, so it starts empty even when the catalog
+        # is already populated. PostgreSQL is the source of truth, so re-project on boot.
+        try:
+            from app.ingestion.jobs import rebuild_graph_job
+
+            await rebuild_graph_job(principal="startup")
+        except Exception as exc:
+            logger.warning("graph_projection_skipped", extra={"error": str(exc)})
 
     await scheduler.start()
     yield
@@ -68,7 +78,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=settings.cors_origin_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

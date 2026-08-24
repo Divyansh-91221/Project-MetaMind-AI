@@ -19,6 +19,7 @@ from app.api.v1 import (
     metadata,
     quality,
     search,
+    trust,
 )
 from app.core.config import settings
 
@@ -33,5 +34,6 @@ api_router.include_router(quality.router)
 api_router.include_router(metadata.router)
 api_router.include_router(lineage.router)
 api_router.include_router(impact.router)
+api_router.include_router(trust.router)
 
 __all__ = ["api_router"]

@@ -66,7 +66,8 @@ describe('LineageGraphView', () => {
 
     expect(screen.getByText('Selected asset')).toBeInTheDocument();
     expect(screen.getByText('1 hop upstream')).toBeInTheDocument();
-    expect(screen.getByText(/snowflake.sales.total_revenue/)).toBeInTheDocument();
+    // The asset appears both as a node and in the edge list.
+    expect(screen.getAllByText(/snowflake\.sales\.total_revenue/).length).toBeGreaterThan(0);
   });
 
   it('flags AI-inferred relationships so they are never mistaken for facts', () => {

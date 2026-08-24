@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { ChatMessage } from '@/types';
+import { Badge, ConfidenceBadge } from '@/components/common/Badge';
+import { Stepper } from '@/components/common/Stepper';
 
 /**
  * A single chat turn.
@@ -12,8 +14,23 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
     return <div className="message user">{message.content}</div>;
   }
 
+  const evidence = message.evidence ?? [];
+  const gradedEvidence = evidence.filter((item) => !item.inferred);
+  const averageConfidence =
+    gradedEvidence.length > 0
+      ? gradedEvidence.reduce((sum, item) => sum + item.confidence, 0) / gradedEvidence.length
+      : null;
+
   return (
     <div className="message assistant">
+      {message.intent && (
+        <div className="row" style={{ marginBottom: 8 }}>
+          <Badge tone="accent">{message.intent}</Badge>
+          {averageConfidence !== null && <ConfidenceBadge confidence={averageConfidence} />}
+          {evidence.some((item) => item.inferred) && <Badge tone="inferred">Includes AI-inferred evidence</Badge>}
+        </div>
+      )}
+
       {renderLines(message.content)}
 
       {message.warnings && message.warnings.length > 0 && (
@@ -29,6 +46,41 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
           {message.evidence.length} piece(s) of evidence ·{' '}
           {message.evidence.filter((item) => item.inferred).length} inferred
         </div>
+      )}
+
+      {message.intent && (
+        <details className="reasoning-trace">
+          <summary>Reasoning trace</summary>
+          <Stepper
+            steps={[
+              { label: 'User question', state: 'done' },
+              { label: `Intent detected: ${message.intent}`, state: 'done' },
+              {
+                label: 'Entities resolved',
+                detail:
+                  message.resolvedEntities && message.resolvedEntities.length > 0
+                    ? message.resolvedEntities.map((entity) => entity.qualified_name).join(', ')
+                    : 'No catalog asset resolved',
+                state: 'done',
+              },
+              {
+                label: 'Tools selected',
+                detail: message.toolCalls?.map((call) => call.tool).join(', ') || 'none',
+                state: 'done',
+              },
+              {
+                label: 'Evidence collected',
+                detail: `${evidence.length} item(s)`,
+                state: 'done',
+              },
+              {
+                label: 'Answer generated',
+                detail: message.tookMs ? `${message.tookMs.toFixed(0)}ms` : undefined,
+                state: 'done',
+              },
+            ]}
+          />
+        </details>
       )}
     </div>
   );
