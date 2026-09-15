@@ -34,6 +34,7 @@ class EvidenceItem(APIModel):
         "governance",
         "quality",
         "constraint",
+        "enrichment",
     ]
     title: str
     detail: str = ""

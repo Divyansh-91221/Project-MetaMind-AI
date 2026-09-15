@@ -3,6 +3,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.tools.base import Tool, ToolResult
+from app.agents.tools.enrichment_tool import EnrichmentTool
 from app.agents.tools.glossary_tool import GlossaryTool
 from app.agents.tools.governance_tool import GovernanceTool
 from app.agents.tools.impact_tool import ImpactTool
@@ -21,6 +22,7 @@ TOOL_CLASSES: tuple[type[Tool], ...] = (
     GlossaryTool,
     QualityTool,
     UniquenessTool,
+    EnrichmentTool,
 )
 
 
@@ -32,6 +34,7 @@ def build_toolbox(session: AsyncSession) -> dict[str, Tool]:
 
 __all__ = [
     "TOOL_CLASSES",
+    "EnrichmentTool",
     "GlossaryTool",
     "GovernanceTool",
     "ImpactTool",

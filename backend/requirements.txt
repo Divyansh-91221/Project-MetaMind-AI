@@ -24,11 +24,19 @@ httpx==0.27.2
 tenacity==9.0.0
 # Optional providers - enabled through LLM_PROVIDER / EMBEDDING_PROVIDER.
 openai==1.51.0
+# Trusts the OS certificate store for outbound HTTPS (needed behind corporate TLS-inspecting proxies).
+pip-system-certs==5.3
 
 # --- Observability / utilities ----------------------------------------------
 structlog==24.4.0
 python-json-logger==2.0.7
 python-dateutil==2.9.0.post0
+PyYAML==6.0.3
+
+# --- Metadata Enrichment ("Upload & Enrich") file parsing --------------------
+openpyxl==3.1.5
+pypdf==5.0.0
+python-docx==1.1.2
 
 # --- Security ---------------------------------------------------------------
 pyjwt[crypto]==2.9.0

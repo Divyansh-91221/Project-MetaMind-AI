@@ -80,6 +80,23 @@ export const api = {
     request<T>(path, { method: 'POST', body, query }),
   patch: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PATCH', body }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  /** Multipart form submission (file uploads) - bypasses the JSON body encoding above. */
+  postForm: async <T>(path: string, form: FormData): Promise<T> => {
+    const response = await fetch(buildUrl(path), { method: 'POST', body: form });
+    if (!response.ok) {
+      let message = `${response.status} ${response.statusText}`;
+      let code = 'error';
+      try {
+        const payload = await response.json();
+        message = payload?.error?.message ?? message;
+        code = payload?.error?.code ?? code;
+      } catch {
+        // Non-JSON error body; keep the status text.
+      }
+      throw new ApiError(message, response.status, code);
+    }
+    return (await response.json()) as T;
+  },
 };
 
 /** URNs contain `:` and `/`, so they must be encoded before being placed in a path. */

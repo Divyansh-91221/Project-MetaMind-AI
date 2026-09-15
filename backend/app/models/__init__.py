@@ -7,6 +7,12 @@ for autogeneration.
 from app.db.base import Base
 from app.models.audit import AuditEvent
 from app.models.documents import Document, DocumentChunk
+from app.models.enrichment import (
+    EnrichmentColumn,
+    EnrichmentIssue,
+    EnrichmentMapping,
+    EnrichmentRun,
+)
 from app.models.glossary import BusinessTerm, TermAssignment
 from app.models.governance import (
     Classification,
@@ -27,6 +33,10 @@ __all__ = [
     "DataSource",
     "Document",
     "DocumentChunk",
+    "EnrichmentColumn",
+    "EnrichmentIssue",
+    "EnrichmentMapping",
+    "EnrichmentRun",
     "EntityClassification",
     "EntityOwner",
     "FreshnessRecord",

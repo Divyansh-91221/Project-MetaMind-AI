@@ -12,6 +12,7 @@ from fastapi import APIRouter
 from app.api.v1 import (
     connectors,
     copilot,
+    enrichment,
     glossary,
     governance,
     impact,
@@ -35,5 +36,6 @@ api_router.include_router(metadata.router)
 api_router.include_router(lineage.router)
 api_router.include_router(impact.router)
 api_router.include_router(trust.router)
+api_router.include_router(enrichment.router)
 
 __all__ = ["api_router"]

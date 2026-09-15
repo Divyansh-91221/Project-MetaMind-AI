@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Sparkles,
   LogOut,
+  UploadCloud,
   UserCircle2,
   X,
 } from 'lucide-react';
@@ -121,6 +122,7 @@ export function Layout({ children }: { children: ReactNode }) {
       'scan-search': ScanSearch,
       'clipboard-check': ClipboardCheck,
       sparkles: Sparkles,
+      'upload-cloud': UploadCloud,
       'settings-2': Settings2,
     }),
     [],

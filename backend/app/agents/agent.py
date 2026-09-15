@@ -48,6 +48,10 @@ from app.utils.identifiers import is_urn
 
 logger = get_logger(__name__)
 
+# Below this many evidence items, the fixed intent -> tool plan likely under-covers a
+# free-form question, so a supplemental hybrid/RAG search broadens grounding.
+_MIN_EVIDENCE_BEFORE_SUPPLEMENT = 3
+
 # Rule-based intent patterns. Ordered: the first match wins, most specific first.
 _INTENT_PATTERNS: tuple[tuple[CopilotIntent, re.Pattern[str]], ...] = (
     (
@@ -349,12 +353,31 @@ class MetadataCopilotAgent:
             state.add_evidence(result.evidence)
             state.add_warnings(result.warnings)
 
+        used_tools = {trace.tool for trace in state.tool_calls}
+
         # If the plan produced nothing usable, fall back to discovery once.
-        if not state.evidence and "catalog_search" not in {t.tool for t in state.tool_calls}:
+        if not state.evidence and "catalog_search" not in used_tools:
             result, trace = await self.tools["catalog_search"].invoke(query=state.query, limit=8)
             state.tool_calls.append(trace)
             state.add_evidence(result.evidence)
             state.add_warnings(result.warnings)
+            used_tools.add("catalog_search")
+            result, trace = await self.tools["enrichment_lookup"].invoke(query=state.query)
+            state.tool_calls.append(trace)
+            state.add_evidence(result.evidence)
+
+        # Thin evidence from a well-matched intent still means the question likely reaches
+        # beyond that intent's fixed tool plan (e.g. a mixed or open-ended question). One
+        # supplemental hybrid/RAG search adds broader grounding without discarding what the
+        # planned tools already found.
+        elif len(state.evidence) < _MIN_EVIDENCE_BEFORE_SUPPLEMENT and "catalog_search" not in used_tools:
+            result, trace = await self.tools["catalog_search"].invoke(query=state.query, limit=8)
+            state.tool_calls.append(trace)
+            state.add_evidence(result.evidence)
+            state.add_warnings(result.warnings)
+            result, trace = await self.tools["enrichment_lookup"].invoke(query=state.query)
+            state.tool_calls.append(trace)
+            state.add_evidence(result.evidence)
 
     # ------------------------------------------------------------------ #
     # Stage 5 - synthesis

@@ -1067,6 +1067,121 @@ pre {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
 }
 
+/* ---------------- Enrichment evidence drawer ---------------- */
+.evidence-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 9, 16, 0.55);
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.evidence-drawer {
+  width: min(460px, 100vw);
+  height: 100vh;
+  background: var(--bg-elevated);
+  border-left: 1px solid var(--border-strong);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  animation: evidence-drawer-in 0.18s ease-out;
+}
+
+@keyframes evidence-drawer-in {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.evidence-drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+
+.evidence-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 20px 24px;
+}
+
+.evidence-section {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.evidence-section:last-child {
+  border-bottom: none;
+}
+
+.evidence-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0 0 10px;
+}
+
+.evidence-field {
+  display: flex;
+  gap: 10px;
+  padding: 3px 0;
+  font-size: 13px;
+  align-items: baseline;
+}
+
+.evidence-field-label {
+  flex: 0 0 100px;
+  color: var(--text-faint);
+}
+
+.evidence-field-value {
+  flex: 1;
+  color: var(--text-primary);
+  min-width: 0;
+  word-break: break-word;
+}
+
+.evidence-excerpt {
+  margin-top: 8px;
+  padding: 12px 14px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  line-height: 1.55;
+  max-height: 220px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+.evidence-close {
+  background: transparent;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+}
+
+.evidence-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-subtle);
+}
+
+@media (max-width: 560px) {
+  .evidence-drawer {
+    width: 100vw;
+  }
+}
+
 /* ---------------- Stepper (Copilot reasoning trace / AI Studio workflows) ---------------- */
 .stepper {
   list-style: none;
@@ -1564,6 +1679,10 @@ pre {
 
 .dashboard-section-card {
   border-color: var(--border-strong);
+}
+
+.enrichment-section {
+  margin-top: 16px;
 }
 
 .dashboard-mini-list {

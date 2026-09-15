@@ -40,6 +40,7 @@ class TestEntities:
             "sap.customer",
             "sap.orders",
             "databricks.customer_transform",
+            "databricks.payments_transform",
             "snowflake.customer",
             "snowflake.sales",
             "powerbi.sales_dataset",
@@ -66,7 +67,11 @@ class TestEntities:
 
     async def test_pipelines_are_catalogued(self, entities: list[RawEntity]) -> None:
         pipelines = {e.qualified_name for e in entities if e.entity_type is EntityType.PIPELINE}
-        assert pipelines == {"databricks.customer_etl", "databricks.sales_load"}
+        assert pipelines == {
+            "databricks.customer_etl",
+            "databricks.sales_load",
+            "databricks.payments_etl",
+        }
 
     async def test_sensitive_columns_carry_classifications(self, entities: list[RawEntity]) -> None:
         customer_id = next(e for e in entities if e.qualified_name == "sap.customer.customer_id")
@@ -82,7 +87,7 @@ class TestSqlArtifacts:
         self, demo_connector: DemoConnector
     ) -> None:
         artifacts = [artifact async for artifact in demo_connector.extract_sql()]
-        assert len(artifacts) == 3
+        assert len(artifacts) == 4
         assert all(isinstance(artifact, SqlArtifact) for artifact in artifacts)
         assert all(artifact.pipeline_urn for artifact in artifacts)
 

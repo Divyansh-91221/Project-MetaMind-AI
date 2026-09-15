@@ -298,6 +298,37 @@ class DemoConnector(MetadataConnector):
             row_count=1_180_000,
             properties={"format": "DELTA", "catalog": "main"},
         )
+        entities += _table(
+            DATABRICKS,
+            "databricks.payments_transform",
+            "Masked card-payment records curated for downstream analytics and dispute review.",
+            [
+                {
+                    "name": "customer_id",
+                    "type": "STRING",
+                    "pk": True,
+                    "nullable": False,
+                    "description": "Customer that owns the payment instrument.",
+                    "classifications": ["PII.CustomerIdentifier"],
+                    "terms": ["Customer"],
+                },
+                {
+                    "name": "masked_card_number",
+                    "type": "STRING",
+                    "description": "Masked display form of the card number, forwarded as-is from SAP.",
+                    "classifications": ["PCI.CardNumber"],
+                },
+                {
+                    "name": "payment_channel",
+                    "type": "STRING",
+                    "description": "Channel the payment was captured through (e.g. CARD, WALLET).",
+                },
+            ],
+            owners=[("Data Engineering", "TECHNICAL_OWNER")],
+            tags=["curated", "delta", "masked", "pci"],
+            row_count=8_200_000,
+            properties={"format": "DELTA", "catalog": "main"},
+        )
         entities.append(
             RawEntity(
                 entity_type=EntityType.PIPELINE,
@@ -323,6 +354,17 @@ class DemoConnector(MetadataConnector):
                     "last_status": "FAILED",
                     "last_error": "Upstream SAP extract arrived late; job timed out.",
                 },
+            )
+        )
+        entities.append(
+            RawEntity(
+                entity_type=EntityType.PIPELINE,
+                name="payments_etl",
+                qualified_name="databricks.payments_etl",
+                platform=DATABRICKS,
+                description="Masks SAP card-payment records before they land in the lakehouse.",
+                owners=[("Data Engineering", "TECHNICAL_OWNER")],
+                properties={"schedule": "0 4 * * *", "engine": "spark", "last_status": "SUCCESS"},
             )
         )
 
@@ -475,6 +517,16 @@ class DemoConnector(MetadataConnector):
             pipeline_urn=build_urn(EntityType.PIPELINE, DATABRICKS, "databricks.customer_etl"),
             source="databricks/customer_etl/curate_customer.sql",
         )
+        yield SqlArtifact(
+            sql=(
+                "CREATE TABLE databricks.payments_transform AS "
+                "SELECT customer_id, masked_card_number FROM sap.card_payments"
+            ),
+            platform=DATABRICKS,
+            dialect="spark",
+            pipeline_urn=build_urn(EntityType.PIPELINE, DATABRICKS, "databricks.payments_etl"),
+            source="databricks/payments_etl/mask_card_payments.sql",
+        )
 
     # ------------------------------------------------------------------ #
     # Declared lineage (BI tools rarely expose SQL)
@@ -486,11 +538,11 @@ class DemoConnector(MetadataConnector):
             return build_urn(entity_type, platform, qualified_name)
 
         # Pipelines read from and write to tables.
-        for pipeline, reads, writes in (
-            ("databricks.customer_etl", "sap.customer", "databricks.customer_transform"),
-            ("databricks.sales_load", "sap.orders", "snowflake.sales"),
+        for pipeline, reads, read_platform, writes in (
+            ("databricks.customer_etl", "sap.customer", SAP, "databricks.customer_transform"),
+            ("databricks.sales_load", "sap.orders", SAP, "snowflake.sales"),
+            ("databricks.payments_etl", "sap.card_payments", SAP, "databricks.payments_transform"),
         ):
-            read_platform = SAP
             write_platform = DATABRICKS if writes.startswith(DATABRICKS) else SNOWFLAKE
             yield RawLineage(
                 source_urn=urn(EntityType.TABLE, read_platform, reads),
@@ -507,6 +559,22 @@ class DemoConnector(MetadataConnector):
                 level=LineageLevel.TABLE,
                 observed_at=now,
                 evidence={"source": "databricks job definition"},
+            )
+
+        # Column-level lineage for the payments masking pipeline.
+        for source_column, target_column in (
+            ("customer_id", "customer_id"),
+            ("masked_card_number", "masked_card_number"),
+        ):
+            yield RawLineage(
+                source_urn=urn(EntityType.COLUMN, SAP, f"sap.card_payments.{source_column}"),
+                target_urn=urn(
+                    EntityType.COLUMN, DATABRICKS, f"databricks.payments_transform.{target_column}"
+                ),
+                relationship=RelationshipType.DERIVED_FROM,
+                level=LineageLevel.COLUMN,
+                observed_at=now,
+                evidence={"source": "databricks payments_etl notebook"},
             )
 
         # Power BI semantic model consumes Snowflake tables.
@@ -610,6 +678,17 @@ class DemoConnector(MetadataConnector):
             dimension=QualityDimension.FRESHNESS,
             metric_name="hours_since_last_load",
             value=5.0,
+            unit="hours",
+            threshold=24.0,
+            status=QualityStatus.PASS,
+            measured_at=now,
+            details={"expected_interval_hours": 24},
+        )
+        yield RawQualityMetric(
+            entity_urn=build_urn(EntityType.TABLE, DATABRICKS, "databricks.payments_transform"),
+            dimension=QualityDimension.FRESHNESS,
+            metric_name="hours_since_last_load",
+            value=10.0,
             unit="hours",
             threshold=24.0,
             status=QualityStatus.PASS,

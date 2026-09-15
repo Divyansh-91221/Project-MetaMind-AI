@@ -10,6 +10,7 @@ import { Copilot } from '@/pages/Copilot';
 import { HumanApproval } from '@/pages/HumanApproval';
 import { AIStudio } from '@/pages/AIStudio';
 import { IngestionCenter } from '@/pages/IngestionCenter';
+import { MetadataEnrichment } from '@/pages/MetadataEnrichment';
 import { Settings } from '@/pages/Settings';
 import { TrustCenter } from '@/pages/TrustCenter';
 
@@ -35,6 +36,7 @@ export function AppRoutes() {
       <Route path="/glossary" element={<Glossary />} />
       <Route path="/studio" element={<AIStudio />} />
       <Route path="/ingestion" element={<IngestionCenter />} />
+      <Route path="/enrichment" element={<MetadataEnrichment />} />
       <Route path="/copilot" element={<Copilot />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="*" element={<Navigate to="/" replace />} />
@@ -47,6 +49,7 @@ export const NAV_ITEMS = [
   { to: '/discovery', label: 'Discovery', icon: 'compass' },
   { to: '/catalog', label: 'Catalog', icon: 'database' },
   { to: '/glossary', label: 'Business Glossary', icon: 'book-open-text' },
+  { to: '/enrichment', label: 'Metadata Enrichment', icon: 'upload-cloud' },
   { to: '/lineage', label: 'Lineage', icon: 'git-branch' },
   { to: '/governance', label: 'Governance', icon: 'shield-check' },
   { to: '/trust-center', label: 'Trust Center', icon: 'badges' },

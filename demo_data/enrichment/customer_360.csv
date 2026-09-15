@@ -1,0 +1,6 @@
+customer_id,customer_name,customer_email,customer_status,revenue,currency,signup_date,customer_segment,loyalty_ref
+CUST-1001,Amelia Chen,amelia.chen@example.com,ACTIVE,48210.50,USD,2023-03-14,Enterprise,LYT-88213
+CUST-1002,Raj Patel,raj.patel@example.com,ACTIVE,12890.00,USD,2022-11-02,SMB,LYT-77410
+CUST-1003,Sofia Rossi,sofia.rossi@example.com,DORMANT,0.00,USD,2021-06-19,SMB,LYT-90341
+CUST-1004,Michael Obi,michael.obi@example.com,ACTIVE,153200.75,USD,2024-01-08,Enterprise,LYT-10029
+CUST-1005,Grace Kim,grace.kim@example.com,PENDING,3400.20,USD,2024-06-30,Mid-Market,LYT-55871
