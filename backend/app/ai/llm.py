@@ -1,11 +1,14 @@
 """LLM provider abstraction.
 
 The agent must never be coupled to a single vendor, so all model access goes through
-``LLMProvider``. Three implementations ship:
+``LLMProvider``. Four implementations ship:
 
 ``mock``          deterministic, offline; returns the evidence-grounded draft unchanged
 ``openai``        OpenAI-compatible chat completions with JSON-schema structured output
 ``azure_openai``  the same wire protocol against an Azure deployment
+``llmaas``        VW Group's LLMaaS gateway - exchanges LLMAAS_CLIENT_ID/SECRET for a bearer
+                  token via the Cloud IDP, then calls the OpenAI-compatible endpoint with that
+                  token plus LLM_API_KEY sent as a custom X-LLM-API-CLIENT-ID header
 
 The mock provider is the default so a developer can run the entire Copilot without any API
 key, and so tests are deterministic.
@@ -17,6 +20,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Protocol, TypeVar, runtime_checkable
 
+import httpx
 from pydantic import BaseModel
 
 from app.core.config import settings
@@ -183,6 +187,58 @@ class OpenAICompatibleProvider:
 _provider: LLMProvider | None = None
 
 
+class LLMaaSProvider(OpenAICompatibleProvider):
+    """VW Group's LLMaaS gateway.
+
+    Unlike plain OpenAI, auth here is two-layered: a short-lived bearer token is fetched from
+    the Cloud IDP via OAuth2 client-credentials, and the tenant's LLM_API_KEY is sent as a
+    custom ``X-LLM-API-CLIENT-ID`` header rather than as the OpenAI ``api_key``. Everything
+    else (chat completions, structured output) is identical to :class:`OpenAICompatibleProvider`.
+    """
+
+    def __init__(self) -> None:  # noqa: super-init-not-called - deliberately different auth setup
+        if not settings.llm_api_key:
+            raise ProviderError("LLM_PROVIDER=llmaas requires LLM_API_KEY (the LLMaaS key).")
+        if not settings.llmaas_client_id or not settings.llmaas_client_secret:
+            raise ProviderError(
+                "LLM_PROVIDER=llmaas requires LLMAAS_CLIENT_ID and LLMAAS_CLIENT_SECRET."
+            )
+        self.name = "llmaas"
+        self.model = settings.llm_model
+        self._azure = False
+        self._client: Any = None
+
+    def _fetch_token(self) -> str:
+        assert settings.llmaas_client_secret is not None
+        response = httpx.post(
+            settings.llmaas_token_url,
+            data={
+                "client_id": settings.llmaas_client_id,
+                "client_secret": settings.llmaas_client_secret.get_secret_value(),
+                "grant_type": "client_credentials",
+            },
+            timeout=settings.llm_timeout_seconds,
+        )
+        if response.status_code != 200:
+            raise ProviderError(f"LLMaaS token request failed: {response.status_code} - {response.text}")
+        return response.json()["access_token"]
+
+    def _get_client(self) -> Any:
+        if self._client is None:
+            from openai import AsyncOpenAI
+
+            assert settings.llm_api_key is not None
+            self._client = AsyncOpenAI(
+                api_key=self._fetch_token(),
+                base_url=settings.llmaas_base_url,
+                default_headers={
+                    "X-LLM-API-CLIENT-ID": f"Bearer {settings.llm_api_key.get_secret_value()}"
+                },
+                timeout=settings.llm_timeout_seconds,
+            )
+        return self._client
+
+
 def get_llm_provider() -> LLMProvider:
     """Return the configured provider (cached for the process lifetime)."""
     global _provider
@@ -191,6 +247,8 @@ def get_llm_provider() -> LLMProvider:
             _provider = OpenAICompatibleProvider(azure=False)
         elif settings.llm_provider == "azure_openai":
             _provider = OpenAICompatibleProvider(azure=True)
+        elif settings.llm_provider == "llmaas":
+            _provider = LLMaaSProvider()
         else:
             _provider = MockLLMProvider()
         logger.info("llm_provider_selected", extra={"provider": _provider.name})

@@ -57,13 +57,21 @@ class Settings(BaseSettings):
     neo4j_database: str = "neo4j"
 
     # --- LLM ----------------------------------------------------------------
-    llm_provider: Literal["mock", "openai", "azure_openai"] = "mock"
+    llm_provider: Literal["mock", "openai", "azure_openai", "llmaas"] = "mock"
     llm_model: str = "gpt-4o-mini"
     llm_api_key: SecretStr | None = None
     llm_api_base: str | None = None
     llm_temperature: float = 0.0
     llm_max_tokens: int = 1200
     llm_timeout_seconds: int = 60
+
+    # --- LLMaaS (VW Group gateway: OAuth2 client-credentials + custom header) ----------------
+    llmaas_client_id: str | None = None
+    llmaas_client_secret: SecretStr | None = None
+    llmaas_token_url: str = (
+        "https://idp.cloud.vwgroup.com/auth/realms/kums-mfa/protocol/openid-connect/token"
+    )
+    llmaas_base_url: str = "https://llmapi.ai.vwgroup.com"
 
     # --- Embeddings ---------------------------------------------------------
     embedding_provider: Literal["hash", "openai"] = "hash"
