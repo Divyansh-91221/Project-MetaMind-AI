@@ -47,7 +47,7 @@ export interface EnrichmentMapping {
   evidence_excerpt?: string | null;
   confidence: number;
   method: string;
-  candidates: Array<{ term: string; confidence: number; source: string }>;
+  candidates: Array<{ term: string; confidence: number; source: string; excerpt?: string | null }>;
   status: EnrichmentMappingStatus;
   reviewed_by?: string | null;
   reviewed_at?: string | null;

@@ -61,6 +61,7 @@ class EnrichmentMappingCandidate(APIModel):
     term: str
     confidence: float
     source: str
+    excerpt: str | None = None
 
 
 class EnrichmentMappingRead(APIModel):

@@ -324,7 +324,16 @@ class EnrichmentService:
                 confidence=confidence,
                 method=method,
                 candidates=[
-                    {"term": c.term or c.document_title, "confidence": round(c.confidence, 4), "source": c.source}
+                    {
+                        "term": c.term or c.document_title,
+                        "confidence": round(c.confidence, 4),
+                        "source": c.source,
+                        # Below-threshold candidates never populate the confirmed evidence_excerpt
+                        # above, but a reviewer still needs to see *why* the AI proposed them.
+                        "excerpt": (c.definition or c.evidence_excerpt)[:280]
+                        if (c.definition or c.evidence_excerpt)
+                        else None,
+                    }
                     for c in all_candidates
                 ],
                 status=status,

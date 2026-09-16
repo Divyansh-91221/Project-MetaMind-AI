@@ -544,8 +544,15 @@ export function MetadataEnrichment() {
                   </div>
                 )}
                 <div className="evidence-excerpt">
-                  {expandedMapping.evidence_excerpt ?? 'No supporting excerpt available.'}
+                  {expandedMapping.evidence_excerpt ??
+                    expandedMapping.candidates.find((c) => c.excerpt)?.excerpt ??
+                    'No supporting excerpt available.'}
                 </div>
+                {!expandedMapping.evidence_excerpt && expandedMapping.candidates.some((c) => c.excerpt) && (
+                  <p className="small faint" style={{ marginTop: 6 }}>
+                    Below the confidence threshold - shown for reference only, not applied as confirmed evidence.
+                  </p>
+                )}
               </section>
 
               <section className="evidence-section">
@@ -569,7 +576,7 @@ export function MetadataEnrichment() {
                     <span className="evidence-field-value">
                       <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
                         {expandedMapping.candidates.map((c) => (
-                          <Badge key={c.term} title={c.source}>
+                          <Badge key={c.term} title={c.excerpt ? `${c.source}: ${c.excerpt}` : c.source}>
                             {c.term} · {Math.round(c.confidence * 100)}%
                           </Badge>
                         ))}
