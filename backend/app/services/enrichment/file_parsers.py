@@ -216,3 +216,116 @@ def parse_documentation(filename: str, data: bytes) -> ParsedDocument:
     if suffix in {"txt", "md", "markdown"}:
         return parse_text(filename, data)
     raise ValidationError(f"Unsupported documentation format: '.{suffix}'.")
+
+
+_DELIMITER_CANDIDATES = [",", "\t", "|", ";"]
+
+
+def parse_delimited_text(filename: str, data: bytes) -> ParsedTable:
+    """Treat a .txt upload as structured data when it is actually delimited (comma/tab/pipe/
+    semicolon) - e.g. a raw export someone saved with a .txt extension."""
+    text = data.decode("utf-8-sig", errors="replace")
+    lines = [line for line in text.splitlines() if line.strip()]
+    if len(lines) < 2:
+        raise ValidationError(f"'{filename}' has no tabular structure to extract as structured data.")
+
+    try:
+        dialect = csv.Sniffer().sniff(text[:4096], delimiters="".join(_DELIMITER_CANDIDATES))
+        delimiter = dialect.delimiter
+    except csv.Error:
+        delimiter = max(_DELIMITER_CANDIDATES, key=lambda d: lines[0].count(d))
+        if lines[0].count(delimiter) == 0:
+            raise ValidationError(
+                f"'{filename}' does not look like delimited data (no comma/tab/pipe/semicolon "
+                "found) - upload it as documentation instead, or convert it to CSV/XLSX."
+            ) from None
+
+    rows = list(csv.reader(lines, delimiter=delimiter))
+    header, *body = rows
+    dataset_name = filename.rsplit(".", 1)[0]
+    return _rows_to_table(dataset_name, header, body)
+
+
+def parse_docx_tables(filename: str, data: bytes) -> dict[str, ParsedTable]:
+    """Extract every table embedded in a Word document as structured data - a Word doc with
+    tables is treated the same way an XLSX with multiple sheets is: one ParsedTable per table."""
+    try:
+        import docx
+    except ImportError as exc:  # pragma: no cover
+        raise ValidationError("DOCX support requires the 'python-docx' package.") from exc
+
+    try:
+        document = docx.Document(io.BytesIO(data))
+        stem = filename.rsplit(".", 1)[0]
+        tables: dict[str, ParsedTable] = {}
+        for index, table in enumerate(document.tables, start=1):
+            rows = [[cell.text.strip() for cell in row.cells] for row in table.rows]
+            rows = [row for row in rows if any(row)]
+            if len(rows) < 2:
+                continue
+            header, *body = rows
+            name = f"{stem}_table_{index}" if len(document.tables) > 1 else stem
+            tables[name] = _rows_to_table(name, header, body)
+    except Exception as exc:
+        raise ValidationError(f"Could not extract tables from '{filename}': {exc}") from exc
+
+    if not tables:
+        raise ValidationError(f"'{filename}' contains no tables to extract as structured data.")
+    return tables
+
+
+_MULTI_SPACE_SPLIT = re.compile(r"\s{2,}|\t")
+
+
+def parse_pdf_tables(filename: str, data: bytes) -> dict[str, ParsedTable]:
+    """Best-effort table extraction from a PDF: rows are detected from lines that split into a
+    consistent number of columns on wide whitespace/tabs. PDFs have no real table structure in
+    their text layer, so this is heuristic - a real CSV/XLSX will always parse more reliably."""
+    try:
+        from pypdf import PdfReader
+    except ImportError as exc:  # pragma: no cover
+        raise ValidationError("PDF support requires the 'pypdf' package.") from exc
+
+    try:
+        reader = PdfReader(io.BytesIO(data))
+        all_lines = [
+            line.strip()
+            for page in reader.pages
+            for line in (page.extract_text() or "").splitlines()
+            if line.strip()
+        ]
+    except Exception as exc:
+        raise ValidationError(f"Could not extract text from '{filename}': {exc}") from exc
+
+    split_lines = [_MULTI_SPACE_SPLIT.split(line) for line in all_lines]
+    counts: dict[int, int] = {}
+    for cells in split_lines:
+        if len(cells) >= 2:
+            counts[len(cells)] = counts.get(len(cells), 0) + 1
+    if not counts:
+        raise ValidationError(
+            f"'{filename}' has no detectable table structure - PDF table extraction is best-effort "
+            "and works only when columns are separated by wide spaces or tabs. Convert it to CSV/XLSX "
+            "for reliable results, or upload it as documentation instead."
+        )
+
+    column_count = max(counts.items(), key=lambda item: item[1])[0]
+    rows = [cells for cells in split_lines if len(cells) == column_count]
+    if len(rows) < 2:
+        raise ValidationError(f"'{filename}' has no consistent table rows to extract.")
+
+    header, *body = rows
+    dataset_name = filename.rsplit(".", 1)[0]
+    return {dataset_name: _rows_to_table(dataset_name, header, body)}
+
+
+def parse_structured_raw(filename: str, data: bytes) -> dict[str, ParsedTable]:
+    """Dispatch a PDF/DOCX/TXT upload treated as *structured* data (not documentation)."""
+    suffix = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if suffix == "docx":
+        return parse_docx_tables(filename, data)
+    if suffix == "pdf":
+        return parse_pdf_tables(filename, data)
+    if suffix == "txt":
+        return {filename.rsplit(".", 1)[0]: parse_delimited_text(filename, data)}
+    raise ValidationError(f"Unsupported structured data format: '.{suffix}'.")

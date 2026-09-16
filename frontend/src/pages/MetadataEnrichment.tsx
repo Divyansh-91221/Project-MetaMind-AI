@@ -290,12 +290,12 @@ export function MetadataEnrichment() {
 
         <div className="row" style={{ gap: 16, marginTop: 16, flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 260px' }}>
-            <div className="small faint" style={{ marginBottom: 6 }}>
-              <UploadCloud size={14} /> Structured Data (CSV / XLSX)
+            <div style={{ marginBottom: 6, fontWeight: 700, color: '#ffffff' }}>
+              <UploadCloud size={14} /> Enterprise Metadata Workbook (CSV / XLSX / PDF / DOCX / TXT)
             </div>
             <input
               type="file"
-              accept=".csv,.xlsx,.xlsm"
+              accept=".csv,.xlsx,.xlsm,.pdf,.docx,.txt"
               multiple
               disabled={busy}
               onChange={(e) => setStructuredFiles(Array.from(e.target.files ?? []))}
@@ -307,7 +307,7 @@ export function MetadataEnrichment() {
             ))}
           </div>
           <div style={{ flex: '1 1 260px' }}>
-            <div className="small faint" style={{ marginBottom: 6 }}>
+            <div style={{ marginBottom: 6, fontWeight: 700, color: '#ffffff' }}>
               <FileText size={14} /> Documentation (PDF / DOCX / TXT / MD)
             </div>
             <input

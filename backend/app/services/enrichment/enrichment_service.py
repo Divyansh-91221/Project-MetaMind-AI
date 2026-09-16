@@ -157,6 +157,11 @@ class EnrichmentService:
                     tables[table.name] = table
                 elif suffix in {"xlsx", "xlsm"}:
                     tables.update(file_parsers.parse_xlsx(filename, data))
+                elif suffix in {"pdf", "docx", "txt"}:
+                    # Raw/unstructured uploads treated as structured data: tables are pulled out
+                    # of a Word doc, delimited rows out of a .txt, or a best-effort layout scan
+                    # of a PDF's text layer - see file_parsers.parse_structured_raw.
+                    tables.update(file_parsers.parse_structured_raw(filename, data))
                 else:
                     raise ValidationError(f"Unsupported structured data format: '.{suffix}'.")
 

@@ -97,6 +97,40 @@ class TestXlsxParsing:
         assert "Whatever_The_Judges_Call_It" in tables
 
 
+class TestStructuredFromRawFiles:
+    """Raw/unstructured uploads (PDF/DOCX/TXT) can also be treated as structured data."""
+
+    def test_delimited_txt_is_parsed_as_a_table(self) -> None:
+        table = file_parsers.parse_delimited_text("export.txt", b"id,name\n1,Alice\n2,Bob\n")
+        assert [c.name for c in table.columns] == ["id", "name"]
+        assert len(table.rows) == 2
+
+    def test_plain_prose_txt_is_rejected_as_structured_data(self) -> None:
+        with pytest.raises(ValidationError):
+            file_parsers.parse_delimited_text("notes.txt", b"This is just a sentence.\nAnother one.\n")
+
+    def test_docx_tables_are_extracted_as_structured_data(self) -> None:
+        docx = pytest.importorskip("docx")
+        document = docx.Document()
+        table = document.add_table(rows=2, cols=2)
+        table.rows[0].cells[0].text = "customer_id"
+        table.rows[0].cells[1].text = "customer_name"
+        table.rows[1].cells[0].text = "1"
+        table.rows[1].cells[1].text = "Alice"
+        import io
+
+        buffer = io.BytesIO()
+        document.save(buffer)
+        tables = file_parsers.parse_docx_tables("dict.docx", buffer.getvalue())
+        assert len(tables) == 1
+        parsed = next(iter(tables.values()))
+        assert [c.name for c in parsed.columns] == ["customer_id", "customer_name"]
+
+    def test_pdf_with_no_table_structure_is_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            file_parsers.parse_pdf_tables("report.pdf", b"%PDF-not-a-real-pdf")
+
+
 class TestDocumentationParsing:
     def test_markdown_is_parsed(self) -> None:
         doc = file_parsers.parse_documentation("dict.md", b"# Title\nSome content.")
