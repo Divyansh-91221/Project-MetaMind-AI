@@ -15,6 +15,7 @@ import pytest
 
 from app.core.exceptions import ValidationError
 from app.services.enrichment import file_parsers, validators
+from app.services.enrichment.enrichment_service import _find_column
 from app.services.enrichment.matching import (
     LOW_CONFIDENCE_THRESHOLD,
     MappingCandidate,
@@ -105,8 +106,62 @@ class TestDocumentationParsing:
         with pytest.raises(ValidationError):
             file_parsers.parse_documentation("file.exe", b"binary")
 
+    def test_docx_headings_are_preserved_as_markdown(self) -> None:
+        """Word heading styles must survive as '#' markers so per-field section splitting
+        (the same mechanism used for markdown) also works for Word documentation."""
+        docx = pytest.importorskip("docx")
+        document = docx.Document()
+        document.add_heading("Customer ID", level=2)
+        document.add_paragraph("A unique identifier for a customer record.")
+        import io
+
+        buffer = io.BytesIO()
+        document.save(buffer)
+        parsed = file_parsers.parse_docx("dict.docx", buffer.getvalue())
+        assert "## Customer ID" in parsed.content
+
+    def test_docx_tables_are_extracted(self) -> None:
+        """Data dictionaries are commonly authored as Word tables - these must not be silently
+        dropped, or a table-only Word doc would contribute zero evidence for every column."""
+        docx = pytest.importorskip("docx")
+        document = docx.Document()
+        table = document.add_table(rows=1, cols=2)
+        cells = table.rows[0].cells
+        cells[0].text = "customer_email"
+        cells[1].text = "The customer's primary contact email address."
+        import io
+
+        buffer = io.BytesIO()
+        document.save(buffer)
+        parsed = file_parsers.parse_docx("dict.docx", buffer.getvalue())
+        assert "customer_email" in parsed.content
+        assert "primary contact email address" in parsed.content
+
 
 class TestMatching:
+    def test_find_column_prefers_descriptive_name_over_id_column(self) -> None:
+        """A 'term_id' column must never win over 'term_name' just because it appears first
+        and also contains the substring 'term' - otherwise glossary terms end up named after
+        opaque codes (e.g. 'TERM-01') instead of their real business name."""
+        table = file_parsers.ParsedTable(
+            name="Business_Glossary",
+            columns=[
+                file_parsers.ParsedColumn(name="term_id", data_type="STRING", nullable=True, sample_values=[]),
+                file_parsers.ParsedColumn(name="term_name", data_type="STRING", nullable=True, sample_values=[]),
+                file_parsers.ParsedColumn(name="definition", data_type="STRING", nullable=True, sample_values=[]),
+            ],
+            rows=[{"term_id": "TERM-01", "term_name": "Customer", "definition": "A buyer."}],
+        )
+        assert _find_column(table, "term", "name") == "term_name"
+
+    def test_find_column_falls_back_to_id_when_nothing_else_matches(self) -> None:
+        table = file_parsers.ParsedTable(
+            name="sheet",
+            columns=[file_parsers.ParsedColumn(name="term_id", data_type="STRING", nullable=True, sample_values=[])],
+            rows=[{"term_id": "TERM-01"}],
+        )
+        assert _find_column(table, "term", "name") == "term_id"
+
     def test_exact_token_match_scores_highly(self) -> None:
         score = token_similarity("customer_id", "Customer Id")
         assert score > 0.5

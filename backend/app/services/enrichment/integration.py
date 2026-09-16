@@ -25,7 +25,7 @@ from app.core.constants import (
 from app.repositories.audit_repository import AuditRepository
 from app.repositories.enrichment_repository import EnrichmentRepository
 from app.schemas.enrichment import EnrichmentIntegrationResult
-from app.schemas.glossary import TermAssignmentRequest
+from app.schemas.glossary import BusinessTermCreate, TermAssignmentRequest
 from app.services.enrichment.enrichment_service import EnrichmentService
 from app.services.glossary.glossary_service import GlossaryService
 from app.services.governance.classification_service import ClassificationService
@@ -122,6 +122,19 @@ class EnrichmentIntegrationService:
                 column.entity_urn = column_entity.urn
 
             if mapping.business_term:
+                # A human-edited mapping may name a term that doesn't exist in the glossary yet -
+                # create it on the spot rather than letting one unresolved name abort the whole
+                # batch's integration.
+                existing_term = await self.glossary.repo.get_by_name(mapping.business_term)
+                if existing_term is None:
+                    await self.glossary.create_term(
+                        BusinessTermCreate(
+                            name=mapping.business_term,
+                            domain=run.business_domain or "enterprise",
+                            definition=mapping.business_definition
+                            or f"Business term captured via Metadata Enrichment for '{run.dataset_name}'.",
+                        )
+                    )
                 await self.glossary.assign_term(
                     TermAssignmentRequest(
                         term_name=mapping.business_term,

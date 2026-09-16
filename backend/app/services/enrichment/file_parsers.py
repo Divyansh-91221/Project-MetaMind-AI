@@ -166,14 +166,37 @@ def parse_docx(filename: str, data: bytes) -> ParsedDocument:
 
     try:
         document = docx.Document(io.BytesIO(data))
-        paragraphs = [p.text for p in document.paragraphs if p.text.strip()]
+        lines: list[str] = []
+        for paragraph in document.paragraphs:
+            text = paragraph.text.strip()
+            if not text:
+                continue
+            style_name = paragraph.style.name if paragraph.style else ""
+            # Preserve Word's heading levels as markdown headings so the same per-section
+            # scanning used for markdown documentation (splitting on "#") also works here -
+            # otherwise a whole Word doc is treated as one undifferentiated block of text.
+            if style_name and style_name.startswith("Heading"):
+                level_token = style_name.replace("Heading", "").strip()
+                level = int(level_token) if level_token.isdigit() else 1
+                lines.append(f"{'#' * max(1, min(level, 6))} {text}")
+            else:
+                lines.append(text)
+
+        # Data dictionaries are very commonly authored as Word tables (Column | Description |
+        # PII | ...). `document.paragraphs` never includes table cell text, so without this a
+        # table-based data dictionary would silently contribute zero evidence for every column.
+        for table in document.tables:
+            for row in table.rows:
+                cells = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+                if cells:
+                    lines.append(" | ".join(cells))
     except Exception as exc:
         raise ValidationError(f"Could not extract text from '{filename}': {exc}") from exc
 
-    if not paragraphs:
+    if not lines:
         raise ValidationError(f"'{filename}' produced no extractable text.")
 
-    return ParsedDocument(title=filename, content="\n".join(paragraphs), source_uri=filename)
+    return ParsedDocument(title=filename, content="\n".join(lines), source_uri=filename)
 
 
 def parse_text(filename: str, data: bytes) -> ParsedDocument:

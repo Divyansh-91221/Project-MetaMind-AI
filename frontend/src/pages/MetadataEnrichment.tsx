@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { UploadCloud, FileText, Sparkles, Download, ExternalLink, X } from 'lucide-react';
+import { UploadCloud, FileText, Sparkles, Download, ExternalLink, X, RotateCcw } from 'lucide-react';
 import { Badge, Card, ConfidenceBadge, PageHeader, Spinner } from '@/components/common';
 import {
   enrichmentApi,
@@ -8,6 +8,10 @@ import {
   type EnrichmentMapping,
   type EnrichmentRun,
 } from '@/services/enrichmentApi';
+
+// Survives tab switches within the SPA: the run itself lives in Postgres, this just
+// remembers which run to reload since the page component unmounts on navigation.
+const ACTIVE_RUN_STORAGE_KEY = 'metamind.enrichment.activeRunId';
 
 const STAGE_ORDER = [
   'UPLOADED',
@@ -79,6 +83,7 @@ export function MetadataEnrichment() {
   const [editDefinition, setEditDefinition] = useState('');
 
   const [busy, setBusy] = useState(false);
+  const [restoring, setRestoring] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [integrationResult, setIntegrationResult] = useState<{
     integrated_count: number;
@@ -92,6 +97,58 @@ export function MetadataEnrichment() {
     ]);
     setMappings(nextMappings);
     setIssues(nextIssues);
+    return nextMappings;
+  };
+
+  // Rehydrate the last active run (if any) so navigating away and back doesn't lose it.
+  useEffect(() => {
+    const storedRunId = localStorage.getItem(ACTIVE_RUN_STORAGE_KEY);
+    if (!storedRunId) {
+      setRestoring(false);
+      return;
+    }
+    (async () => {
+      try {
+        const restoredRun = await enrichmentApi.status(storedRunId);
+        setRun(restoredRun);
+        const restoredMappings = await refreshMappingsAndIssues(restoredRun.id);
+        if (restoredRun.stage === 'INTEGRATED') {
+          const entityUrns = restoredMappings
+            .map((m) => m.entity_urn)
+            .filter((urn): urn is string => Boolean(urn));
+          if (entityUrns.length > 0) {
+            setIntegrationResult({ integrated_count: entityUrns.length, entity_urns: entityUrns });
+          }
+        }
+      } catch {
+        localStorage.removeItem(ACTIVE_RUN_STORAGE_KEY);
+      } finally {
+        setRestoring(false);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (run?.id) {
+      localStorage.setItem(ACTIVE_RUN_STORAGE_KEY, run.id);
+    }
+  }, [run?.id]);
+
+  const resetEnrichment = () => {
+    localStorage.removeItem(ACTIVE_RUN_STORAGE_KEY);
+    setRun(null);
+    setMappings([]);
+    setIssues([]);
+    setExpandedId(null);
+    setEditingId(null);
+    setIntegrationResult(null);
+    setError(null);
+    setDatasetName('');
+    setSourceSystem('');
+    setBusinessDomain('');
+    setDescription('');
+    setStructuredFiles([]);
+    setDocumentationFiles([]);
   };
 
   const startEnrichment = async () => {
@@ -176,7 +233,16 @@ export function MetadataEnrichment() {
       <PageHeader
         title="Metadata Enrichment"
         description="Connect enterprise data with the knowledge that explains it."
+        actions={
+          run && (
+            <button type="button" className="button ghost" disabled={busy} onClick={resetEnrichment}>
+              <RotateCcw size={14} /> Reset / Start New Upload
+            </button>
+          )
+        }
       />
+
+      {restoring && <Spinner label="Restoring your last enrichment run..." />}
 
       <Card title="1. Upload" className="dashboard-section-card">
         <div className="row" style={{ gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>

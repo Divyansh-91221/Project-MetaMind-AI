@@ -15,7 +15,13 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.constants import AuditAction, DocumentType, EnrichmentMappingStatus, EnrichmentStage
+from app.core.constants import (
+    AuditAction,
+    DocumentType,
+    EnrichmentIssueStatus,
+    EnrichmentMappingStatus,
+    EnrichmentStage,
+)
 from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.core.logging import get_logger
 from app.rag.document_loader import LoadedDocument
@@ -68,11 +74,30 @@ def _sheet_kind(sheet_name: str) -> str | None:
     return None
 
 
+_ID_LIKE_COLUMN = re.compile(r"(?:^|_)(?:id|code|key)$")
+
+
 def _find_column(table: file_parsers.ParsedTable, *name_hints: str) -> str | None:
+    """Match the most specific hint first, across all columns, before a weaker one.
+
+    A sheet with both a code column (e.g. 'term_id') and a descriptive column (e.g.
+    'term_name') must resolve to the descriptive one - checking columns in sheet order would
+    let 'term_id' win just because it appears first and also contains the substring 'term'.
+    ID/code-shaped columns are only used as a last resort, never preferred over a real name.
+    """
+    matches_by_hint: dict[str, list[str]] = {hint: [] for hint in name_hints}
     for column in table.columns:
         lowered = column.name.lower()
-        if any(hint in lowered for hint in name_hints):
-            return column.name
+        for hint in name_hints:
+            if hint in lowered:
+                matches_by_hint[hint].append(column.name)
+
+    for hint in name_hints:
+        candidates = matches_by_hint[hint]
+        if not candidates:
+            continue
+        descriptive = [c for c in candidates if not _ID_LIKE_COLUMN.search(c.lower())]
+        return descriptive[0] if descriptive else candidates[0]
     return None
 
 
@@ -513,13 +538,15 @@ class EnrichmentService:
             mapping.status = EnrichmentMappingStatus.APPROVED
 
         if mapping.status is EnrichmentMappingStatus.APPROVED:
+            # A human just confirmed this mapping, so its own open issues are resolved by that
+            # review - they no longer need to block this run's integration.
             open_issues = [
                 issue
                 for issue in await self.repo.list_issues(run.id, mapping_id=mapping.id)
                 if issue.status.value == "OPEN"
             ]
-            if open_issues:
-                mapping.status = EnrichmentMappingStatus.APPROVED_WITH_OPEN_ISSUE
+            for issue in open_issues:
+                issue.status = EnrichmentIssueStatus.RESOLVED
 
         mapping.reviewed_by = principal
         mapping.reviewed_at = datetime.now(UTC)
