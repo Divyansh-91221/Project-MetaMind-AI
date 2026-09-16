@@ -16,6 +16,7 @@ from app.api.deps import CurrentPrincipal, DbSession
 from app.core.security import Permission
 from app.schemas.enrichment import (
     EnrichmentColumnRead,
+    EnrichmentDocumentSearchResult,
     EnrichmentIntegrationResult,
     EnrichmentIssueRead,
     EnrichmentMappingRead,
@@ -106,6 +107,22 @@ async def list_issues(
     principal.require(Permission.METADATA_READ)
     issues = await EnrichmentService(session).list_issues(run_id)
     return [EnrichmentIssueRead.model_validate(i) for i in issues]
+
+
+@router.get(
+    "/{run_id}/search",
+    response_model=list[EnrichmentDocumentSearchResult],
+    summary="Search uploaded documentation within a run",
+)
+async def search_documents(
+    run_id: uuid.UUID,
+    session: DbSession,
+    principal: CurrentPrincipal,
+    q: str,
+    limit: int = 5,
+) -> list[EnrichmentDocumentSearchResult]:
+    principal.require(Permission.METADATA_READ)
+    return await EnrichmentService(session).search_documents(run_id, q, limit=limit)
 
 
 @router.get("/{run_id}/metadata", summary="Enriched metadata (canonical shape)")

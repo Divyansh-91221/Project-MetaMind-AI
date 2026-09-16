@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { UploadCloud, FileText, Sparkles, Download, ExternalLink, X, RotateCcw } from 'lucide-react';
+import { UploadCloud, FileText, Sparkles, Download, ExternalLink, X, RotateCcw, Copy } from 'lucide-react';
 import { Badge, Card, ConfidenceBadge, PageHeader, Spinner } from '@/components/common';
 import {
   enrichmentApi,
@@ -77,6 +77,12 @@ export function MetadataEnrichment() {
   const [run, setRun] = useState<EnrichmentRun | null>(null);
   const [mappings, setMappings] = useState<EnrichmentMapping[]>([]);
   const [issues, setIssues] = useState<EnrichmentIssue[]>([]);
+  const [documentQuery, setDocumentQuery] = useState('');
+  const [documentHits, setDocumentHits] = useState<
+    Array<{ document: string; source: string; excerpt: string; confidence: number; chunk_index: number }>
+  >([]);
+  const [documentSearchActive, setDocumentSearchActive] = useState(false);
+  const [copiedHitKey, setCopiedHitKey] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTerm, setEditTerm] = useState('');
@@ -227,6 +233,73 @@ export function MetadataEnrichment() {
 
   const issuesForMapping = (mappingId: string) => issues.filter((i) => i.mapping_id === mappingId);
   const expandedMapping = mappings.find((m) => m.id === expandedId) ?? null;
+  const searchSuggestions = Array.from(
+    new Set(
+      mappings.flatMap((mapping) => [
+        `${mapping.dataset_name}.${mapping.column_name}`,
+        mapping.column_name,
+        mapping.business_term ?? '',
+        mapping.document_title ?? '',
+      ]),
+    ),
+  )
+    .filter(Boolean)
+    .slice(0, 30);
+
+  const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const highlightMatch = (text: string, query: string) => {
+    if (!query.trim()) return text;
+    const pattern = new RegExp(`(${escapeRegExp(query.trim())})`, 'ig');
+    return text.split(pattern).map((part, index) =>
+      part && pattern.test(part) ? (
+        <mark
+          key={`${part}-${index}`}
+          style={{
+            background: 'rgba(96, 165, 250, 0.28)',
+            color: '#f8fafc',
+            borderRadius: 4,
+            padding: '0 3px',
+            boxShadow: 'inset 0 0 0 1px rgba(96, 165, 250, 0.45)',
+          }}
+        >
+          {part}
+        </mark>
+      ) : (
+        <span key={`${part}-${index}`}>{part}</span>
+      ),
+    );
+  };
+
+  const copyExcerpt = async (hit: { excerpt: string; document: string; source: string; chunk_index: number }) => {
+    const key = `${hit.document}:${hit.source}:${hit.chunk_index}`;
+    try {
+      await navigator.clipboard.writeText(hit.excerpt);
+      setCopiedHitKey(key);
+      window.setTimeout(() => setCopiedHitKey((current) => (current === key ? null : current)), 1200);
+    } catch {
+      setCopiedHitKey(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!run || !documentQuery.trim()) {
+      setDocumentHits([]);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const hits = await enrichmentApi.searchDocuments(run.id, documentQuery.trim(), 5);
+          setDocumentHits(hits);
+        } catch {
+          setDocumentHits([]);
+        }
+      })();
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [run?.id, documentQuery]);
 
   return (
     <>
@@ -366,8 +439,97 @@ export function MetadataEnrichment() {
         </Card>
       )}
 
+      {run && (
+        <Card title="3. Search Uploaded Documentation & Columns" className="dashboard-section-card enrichment-section">
+          <div className="row" style={{ gap: 12, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+            <input
+              className="input"
+              list="enrichment-search-suggestions"
+              value={documentQuery}
+              onChange={(e) => {
+                setDocumentQuery(e.target.value);
+                setDocumentSearchActive(Boolean(e.target.value.trim()));
+              }}
+              placeholder="Search docs, columns, values, or mapped terms"
+              style={{ flex: '1 1 280px' }}
+            />
+            <datalist id="enrichment-search-suggestions">
+              {searchSuggestions.map((suggestion) => (
+                <option key={suggestion} value={suggestion} />
+              ))}
+            </datalist>
+            <button
+              type="button"
+              className="button ghost small"
+              onClick={() => setDocumentSearchActive((prev) => !prev)}
+            >
+              {documentSearchActive ? 'Hide results' : 'Search run evidence'}
+            </button>
+          </div>
+
+          {(documentSearchActive || documentQuery.trim()) && documentHits.length === 0 ? (
+            <div className="small faint">No matching evidence found in this run's uploaded documents or discovered columns.</div>
+          ) : (
+            <ul className="dashboard-list-clean">
+              {documentHits.map((hit) => {
+                const hitKey = `${hit.document}:${hit.source}:${hit.chunk_index}`;
+                return (
+                  <li
+                    key={hitKey}
+                    style={{
+                      padding: '10px 12px',
+                      border: '1px solid rgba(148, 163, 184, 0.22)',
+                      borderRadius: 10,
+                      background: 'rgba(15, 23, 42, 0.52)',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <div
+                      className="row"
+                      style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}
+                    >
+                      <div className="small" style={{ fontWeight: 700, color: '#ffffff' }}>{hit.document}</div>
+                      <div className="row" style={{ gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <span
+                          className="small"
+                          style={{
+                            background: 'rgba(59, 130, 246, 0.12)',
+                            border: '1px solid rgba(96, 165, 250, 0.35)',
+                            borderRadius: 999,
+                            padding: '3px 8px',
+                            color: '#dbeafe',
+                          }}
+                        >
+                          {Math.round(hit.confidence * 100)}% match
+                        </span>
+                        <button
+                          type="button"
+                          className="button ghost small"
+                          title="Copy excerpt to clipboard"
+                          onClick={() => void copyExcerpt(hit)}
+                        >
+                          <Copy size={12} /> {copiedHitKey === hitKey ? 'Copied' : 'Copy excerpt'}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="small faint mono" style={{ marginTop: 6 }}>{hit.source}</div>
+                    <div
+                      className="small"
+                      style={{ marginTop: 8, lineHeight: 1.55 }}
+                      title={hit.excerpt}
+                    >
+                      {highlightMatch(hit.excerpt, documentQuery)}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Card>
+      )}
+
       {run && mappings.length > 0 && (
-        <Card title="3. Mappings" className="dashboard-section-card enrichment-section">
+        <Card title="4. Mappings" className="dashboard-section-card enrichment-section">
           <table className="table">
             <thead>
               <tr>
@@ -413,7 +575,7 @@ export function MetadataEnrichment() {
       )}
 
       {run && issues.length > 0 && (
-        <Card title="4. Quality Issues" className="dashboard-section-card enrichment-section">
+        <Card title="5. Quality Issues" className="dashboard-section-card enrichment-section">
           <ul className="dashboard-list-clean">
             {issues.map((issue) => (
               <li key={issue.id} className="row" style={{ justifyContent: 'space-between', padding: '8px 0' }}>
@@ -436,7 +598,7 @@ export function MetadataEnrichment() {
       )}
 
       {run && (
-        <Card title="5. Integrate" className="dashboard-section-card enrichment-section">
+        <Card title="6. Integrate" className="dashboard-section-card enrichment-section">
           <p className="small muted">
             Integration is only allowed once every mapping has been reviewed and no high-severity
             issues remain open.

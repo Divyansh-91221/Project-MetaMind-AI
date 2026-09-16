@@ -95,6 +95,14 @@ class EnrichmentIssueRead(APIModel):
     status: EnrichmentIssueStatus
 
 
+class EnrichmentDocumentSearchResult(APIModel):
+    document: str
+    source: str
+    excerpt: str
+    confidence: float = Field(ge=0.0, le=1.0)
+    chunk_index: int = 0
+
+
 class EnrichmentReviewRequest(APIModel):
     mapping_id: uuid.UUID
     action: Literal["approve", "reject", "edit"]

@@ -115,6 +115,12 @@ export const enrichmentApi = {
 
   metadata: (runId: string) => api.get<Array<Record<string, unknown>>>(`/enrichment/${runId}/metadata`),
 
+  searchDocuments: (runId: string, q: string, limit = 8) =>
+    api.get<Array<{ document: string; source: string; excerpt: string; confidence: number; chunk_index: number }>>(
+      `/enrichment/${runId}/search`,
+      { q, limit },
+    ),
+
   exportUrl: (runId: string, format: 'json' | 'yaml') =>
     `${(import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api/v1'}/enrichment/${runId}/export/${format}`,
 };

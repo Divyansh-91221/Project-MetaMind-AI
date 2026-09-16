@@ -29,7 +29,7 @@ from app.rag.rag_pipeline import RAGPipeline
 from app.repositories.audit_repository import AuditRepository
 from app.repositories.enrichment_repository import EnrichmentRepository
 from app.repositories.glossary_repository import GlossaryRepository
-from app.schemas.enrichment import EnrichmentReviewRequest
+from app.schemas.enrichment import EnrichmentDocumentSearchResult, EnrichmentReviewRequest
 from app.schemas.glossary import BusinessTermCreate
 from app.services.enrichment import file_parsers, validators
 from app.services.enrichment.matching import (
@@ -99,6 +99,15 @@ def _find_column(table: file_parsers.ParsedTable, *name_hints: str) -> str | Non
         descriptive = [c for c in candidates if not _ID_LIKE_COLUMN.search(c.lower())]
         return descriptive[0] if descriptive else candidates[0]
     return None
+
+
+def _search_variants(query: str) -> set[str]:
+    variants = {query.strip(), normalize_column_name(query)}
+    for part in re.split(r"[.\s]+", query):
+        if part.strip():
+            variants.add(part.strip())
+            variants.add(normalize_column_name(part))
+    return {variant.lower() for variant in variants if variant.strip()}
 
 
 class EnrichmentService:
@@ -595,6 +604,141 @@ class EnrichmentService:
     async def list_issues(self, run_id: uuid.UUID) -> list[Any]:
         await self._get_run_or_404(run_id)
         return await self.repo.list_issues(run_id)
+
+    async def _run_metadata_search(
+        self, run_id: uuid.UUID, query: str, *, limit: int
+    ) -> list[EnrichmentDocumentSearchResult]:
+        columns = await self.repo.list_columns(run_id)
+        mappings = await self.repo.list_mappings(run_id)
+        mappings_by_key = {(m.dataset_name, m.column_name): m for m in mappings}
+        variants = _search_variants(query)
+        results: list[EnrichmentDocumentSearchResult] = []
+
+        for index, column in enumerate(columns):
+            mapping = mappings_by_key.get((column.dataset_name, column.column_name))
+            samples = [str(value) for value in (column.sample_values or [])[:4]]
+            parts = [
+                column.dataset_name,
+                column.column_name,
+                column.data_type or "",
+                "nullable" if column.nullable else "required",
+                *(samples or []),
+                mapping.business_term if mapping else "",
+                mapping.business_definition if mapping else "",
+                mapping.evidence_excerpt if mapping else "",
+            ]
+            searchable = " ".join(part for part in parts if part)
+            full_name = f"{column.dataset_name}.{column.column_name}"
+            searchable = f"{full_name} {searchable}"
+            normalized_searchable = normalize_column_name(searchable)
+            searchable_lower = searchable.lower()
+            normalized_searchable_lower = normalized_searchable.lower()
+            if not any(
+                variant in searchable_lower or variant in normalized_searchable_lower
+                for variant in variants
+            ):
+                continue
+
+            confidence = 0.95 if any(
+                variant in column.column_name.lower()
+                or variant in normalize_column_name(column.column_name).lower()
+                for variant in variants
+            ) else 0.8
+            excerpt_parts = [
+                f"Column {column.dataset_name}.{column.column_name}",
+                f"type: {column.data_type or 'UNKNOWN'}",
+                "nullable" if column.nullable else "required",
+            ]
+            if samples:
+                excerpt_parts.append(f"sample values: {', '.join(samples)}")
+            if mapping and mapping.business_term:
+                excerpt_parts.append(f"mapped term: {mapping.business_term}")
+            if mapping and mapping.business_definition:
+                excerpt_parts.append(mapping.business_definition)
+            results.append(
+                EnrichmentDocumentSearchResult(
+                    document="Uploaded metadata columns",
+                    source=f"enrichment/{run_id}/structured-metadata",
+                    excerpt="; ".join(excerpt_parts)[:800],
+                    confidence=confidence,
+                    chunk_index=index,
+                )
+            )
+            if len(results) >= limit:
+                break
+        return results
+
+    async def search_documents(
+        self, run_id: uuid.UUID, query: str, *, limit: int = 5
+    ) -> list[EnrichmentDocumentSearchResult]:
+        """Search this enrichment run's uploaded documentation and discovered columns.
+
+        This intentionally uses the existing RAG retrieval index and direct metadata scans
+        rather than the LLM, keeping the operation cheap and grounded in the uploaded run.
+        """
+        await self._get_run_or_404(run_id)
+        query = query.strip()
+        if not query:
+            return []
+
+        scoped: list[EnrichmentDocumentSearchResult] = []
+        if hasattr(self.session, "execute") or self.repo.__class__ is not EnrichmentRepository:
+            scoped.extend(await self._run_metadata_search(run_id, query, limit=limit))
+            if len(scoped) >= limit:
+                return scoped[:limit]
+
+        hits = await self.rag.retrieve(
+            query,
+            top_k=max(limit, 5),
+            document_types=[DocumentType.DATA_DOCUMENTATION],
+        )
+        for hit in hits:
+            source_uri = hit.source_uri or ""
+            run_prefix = f"enrichment/{run_id}/"
+            matches_run = source_uri.startswith(run_prefix)
+            metadata_run_id = hit.metadata.get("run_id") if isinstance(hit.metadata, dict) else None
+            if not matches_run and metadata_run_id != str(run_id):
+                continue
+            excerpt = (hit.content or "").strip()
+            chunk_index = int(hit.metadata.get("chunk_index", 0)) if isinstance(hit.metadata, dict) else 0
+            scoped.append(
+                EnrichmentDocumentSearchResult(
+                    document=hit.document_title,
+                    source=source_uri,
+                    excerpt=excerpt[:800],
+                    confidence=float(min(1.0, max(0.0, hit.score))),
+                    chunk_index=chunk_index,
+                )
+            )
+            if len(scoped) >= limit:
+                break
+
+        if len(scoped) >= limit:
+            return scoped
+
+        # Final fallback: direct lexical scan over the run's own sections keeps the feature
+        # usable even when vector similarity is weak for short queries without spending extra
+        # LLM credits on a second round-trip. Only run this when a real DB-backed session is
+        # available to read the uploaded document chunks from this run.
+        if not hasattr(self.session, "execute"):
+            return scoped[:limit]
+
+        for title, source_uri, section in await self._run_sections(run_id):
+            section_text = section.strip()
+            if not section_text or query.lower() not in section_text.lower():
+                continue
+            scoped.append(
+                EnrichmentDocumentSearchResult(
+                    document=title,
+                    source=source_uri,
+                    excerpt=section_text[:800],
+                    confidence=0.65,
+                    chunk_index=0,
+                )
+            )
+            if len(scoped) >= limit:
+                break
+        return scoped[:limit]
 
     async def build_export(self, run_id: uuid.UUID) -> list[dict[str, Any]]:
         run = await self._get_run_or_404(run_id)

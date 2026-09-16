@@ -9,13 +9,20 @@ has to work the same way.
 
 from __future__ import annotations
 
+import uuid
 from datetime import date
+from typing import cast
+from unittest.mock import AsyncMock
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.constants import DocumentType
 
 from app.core.exceptions import ValidationError
+from app.schemas.search import DocumentHit
 from app.services.enrichment import file_parsers, validators
-from app.services.enrichment.enrichment_service import _find_column
+from app.services.enrichment.enrichment_service import EnrichmentService, _find_column
 from app.services.enrichment.matching import (
     LOW_CONFIDENCE_THRESHOLD,
     MappingCandidate,
@@ -216,6 +223,83 @@ class TestMatching:
         ]
         ranked = rank_candidates(candidates)
         assert [c.term for c in ranked] == ["High", "Mid", "Low"]
+
+
+class TestEnrichmentDocumentSearch:
+    @pytest.mark.asyncio
+    async def test_search_documents_filters_this_runs_chunks(self) -> None:
+        run_id = uuid.uuid4()
+        service = EnrichmentService(cast(AsyncSession, object()))
+        service._get_run_or_404 = AsyncMock(return_value=type("Run", (), {"id": run_id})())
+        service.rag = type(
+            "RagStub",
+            (),
+            {
+                "retrieve": AsyncMock(
+                    return_value=[
+                        DocumentHit(
+                            chunk_id="hit-1",
+                            document_title="Customer Data Dictionary",
+                            document_type=DocumentType.DATA_DOCUMENTATION,
+                            content="Customer ID is the unique identifier for a buyer.",
+                            score=0.92,
+                            source_uri=f"enrichment/{run_id}/customer.md",
+                        ),
+                        DocumentHit(
+                            chunk_id="hit-2",
+                            document_title="Other Document",
+                            document_type=DocumentType.DATA_DOCUMENTATION,
+                            content="Invoice number is a payment reference.",
+                            score=0.88,
+                            source_uri=f"enrichment/{uuid.uuid4()}/invoice.md",
+                        ),
+                    ]
+                )
+            },
+        )()
+
+        results = await service.search_documents(run_id, "customer id")
+
+        assert len(results) == 1
+        assert results[0].document == "Customer Data Dictionary"
+        assert "Customer ID" in results[0].excerpt
+        assert results[0].source == f"enrichment/{run_id}/customer.md"
+
+    @pytest.mark.asyncio
+    async def test_search_documents_includes_discovered_columns(self) -> None:
+        run_id = uuid.uuid4()
+        service = EnrichmentService(cast(AsyncSession, object()))
+        service._get_run_or_404 = AsyncMock(return_value=type("Run", (), {"id": run_id})())
+        service.repo = type(
+            "RepoStub",
+            (),
+            {
+                "list_columns": AsyncMock(
+                    return_value=[
+                        type(
+                            "Column",
+                            (),
+                            {
+                                "dataset_name": "customer_360",
+                                "column_name": "dataset_id",
+                                "data_type": "STRING",
+                                "nullable": False,
+                                "sample_values": ["ds-001"],
+                            },
+                        )()
+                    ]
+                ),
+                "list_mappings": AsyncMock(return_value=[]),
+            },
+        )()
+        service.rag = type("RagStub", (), {"retrieve": AsyncMock(return_value=[])})()
+
+        results = await service.search_documents(run_id, "Columns.dataset_id")
+
+        assert len(results) == 1
+        assert results[0].document == "Uploaded metadata columns"
+        assert "customer_360.dataset_id" in results[0].excerpt
+        assert results[0].source == f"enrichment/{run_id}/structured-metadata"
 
 
 class TestValidators:
