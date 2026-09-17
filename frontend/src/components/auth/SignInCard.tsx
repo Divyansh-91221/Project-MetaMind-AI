@@ -24,6 +24,8 @@ interface SignInCardProps {
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onTogglePassword: () => void;
+  registerMode: boolean;
+  onToggleMode: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }
 
@@ -38,6 +40,8 @@ export function SignInCard({
   onEmailChange,
   onPasswordChange,
   onTogglePassword,
+  registerMode,
+  onToggleMode,
   onSubmit,
 }: SignInCardProps) {
   return (
@@ -50,29 +54,35 @@ export function SignInCard({
           </span>
           <div>
             <p className={styles.logoText}>MetaMind AI</p>
-            <h2 className={styles.welcome}>Welcome back</h2>
-            <p className={styles.subtitle}>Access your enterprise metadata workspace.</p>
+            <h2 className={styles.welcome}>{registerMode ? 'Create your account' : 'Welcome back'}</h2>
+            <p className={styles.subtitle}>
+              {registerMode ? 'Set up your enterprise metadata workspace.' : 'Access your enterprise metadata workspace.'}
+            </p>
           </div>
         </div>
 
         <form className={styles.form} onSubmit={onSubmit} noValidate>
-          <label className={styles.inputLabel} htmlFor="auth-username">
-            Username
-          </label>
-          <div className={styles.inputShell}>
-            <User size={16} className={styles.inputIcon} aria-hidden />
-            <input
-              id="auth-username"
-              className={styles.input}
-              type="text"
-              autoComplete="nickname"
-              value={username}
-              onChange={(event) => onUsernameChange(event.target.value)}
-              placeholder="Your name"
-              required
-              disabled={pending}
-            />
-          </div>
+          {registerMode ? (
+            <>
+              <label className={styles.inputLabel} htmlFor="auth-username">
+                Full Name
+              </label>
+              <div className={styles.inputShell}>
+                <User size={16} className={styles.inputIcon} aria-hidden />
+                <input
+                  id="auth-username"
+                  className={styles.input}
+                  type="text"
+                  autoComplete="name"
+                  value={username}
+                  onChange={(event) => onUsernameChange(event.target.value)}
+                  placeholder="Your name"
+                  required
+                  disabled={pending}
+                />
+              </div>
+            </>
+          ) : null}
 
           <label className={styles.inputLabel} htmlFor="auth-email">
             Work Email
@@ -127,7 +137,11 @@ export function SignInCard({
 
           <button className={styles.submit} type="submit" disabled={pending}>
             {pending ? <LoaderCircle size={16} className={styles.spinner} aria-hidden /> : <Sparkles size={16} aria-hidden />}
-            <span>{pending ? 'Authenticating...' : 'Enter MetaMind'}</span>
+            <span>{pending ? 'Authenticating...' : registerMode ? 'Create account' : 'Enter MetaMind'}</span>
+          </button>
+
+          <button className={styles.modeToggle} type="button" onClick={onToggleMode} disabled={pending}>
+            {registerMode ? 'Already have an account? Sign in' : 'New here? Create an account'}
           </button>
 
           <div className={styles.authChecks} aria-live="polite" aria-hidden={!pending}>

@@ -97,7 +97,7 @@ class Settings(BaseSettings):
     # --- Security -----------------------------------------------------------
     auth_enabled: bool = False
     jwt_secret: SecretStr | None = None
-    jwt_algorithm: str = "RS256"
+    jwt_algorithm: str = "HS256"
     jwt_audience: str = "enterprise-metadata-copilot"
     jwt_issuer: str | None = None
     default_principal: str = "local-developer"

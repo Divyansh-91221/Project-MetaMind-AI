@@ -7,6 +7,7 @@
  */
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api/v1';
+const AUTH_TOKEN_KEY = 'metamind-auth-token';
 
 export class ApiError extends Error {
   constructor(
@@ -49,6 +50,9 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     ...rest,
     headers: {
       'Content-Type': 'application/json',
+      ...(typeof window !== 'undefined' && window.localStorage.getItem(AUTH_TOKEN_KEY)
+        ? { Authorization: `Bearer ${window.localStorage.getItem(AUTH_TOKEN_KEY)}` }
+        : {}),
       ...headers,
     },
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -98,6 +102,8 @@ export const api = {
     return (await response.json()) as T;
   },
 };
+
+export { AUTH_TOKEN_KEY };
 
 /** URNs contain `:` and `/`, so they must be encoded before being placed in a path. */
 export function encodeUrn(urn: string): string {

@@ -11,6 +11,7 @@ export function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [registerMode, setRegisterMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -20,7 +21,7 @@ export function SignIn() {
     setError(null);
 
     try {
-      await signIn(email, password, username);
+      await signIn(email, password, username, registerMode);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in.');
     } finally {
@@ -48,6 +49,11 @@ export function SignIn() {
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
           onTogglePassword={() => setShowPassword((value) => !value)}
+          registerMode={registerMode}
+          onToggleMode={() => {
+            setRegisterMode((value) => !value);
+            setError(null);
+          }}
           onSubmit={onSubmit}
         />
       </section>

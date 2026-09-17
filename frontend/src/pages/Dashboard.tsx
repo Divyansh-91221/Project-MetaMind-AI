@@ -144,6 +144,8 @@ export function Dashboard() {
   const recentActivity = buildRecentActivity(runs.data, review.data, unconfirmedSensitiveCount);
   const trustSeries = buildTrustSeries(trendWindow, trustScore);
   const domainRows = filterDomainDistribution(domain);
+  const currentHour = new Date().getHours();
+  const greeting = currentHour < 12 ? 'Good Morning' : currentHour < 18 ? 'Good Afternoon' : 'Good Evening';
 
   const onSuggestionClick = (href: string) => navigate(href);
   const onSendQuickAsk = () => {
@@ -169,7 +171,7 @@ export function Dashboard() {
     <>
       <section className="dashboard-heading-row">
         <div>
-          <h1 className="dashboard-heading">Good Evening, {user?.name || 'User'} 👋</h1>
+          <h1 className="dashboard-heading">{greeting}, {user?.name || 'User'} 👋</h1>
           <p className="dashboard-heading-subtitle">Here's what's happening in your data ecosystem today.</p>
         </div>
 

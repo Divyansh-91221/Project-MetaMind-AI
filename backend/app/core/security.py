@@ -110,7 +110,9 @@ def decode_token(token: str) -> Principal:
             settings.jwt_secret.get_secret_value(),
             algorithms=[settings.jwt_algorithm],
             audience=settings.jwt_audience,
-            issuer=settings.jwt_issuer,
+            # An empty issuer must stay unset: passing "" still tells PyJWT to require an
+            # "iss" claim, which tokens issued without a configured issuer never carry.
+            issuer=settings.jwt_issuer or None,
             options={"verify_aud": bool(settings.jwt_audience)},
         )
     except jwt.PyJWTError as exc:

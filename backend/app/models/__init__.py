@@ -24,6 +24,7 @@ from app.models.governance import (
 from app.models.lineage import LineageEdge, LineageObservation
 from app.models.metadata import DataSource, MetadataEntity
 from app.models.quality import FreshnessRecord, QualityMetric
+from app.models.users import User
 
 __all__ = [
     "AuditEvent",
@@ -47,4 +48,5 @@ __all__ = [
     "Policy",
     "QualityMetric",
     "TermAssignment",
+    "User",
 ]

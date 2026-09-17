@@ -1,35 +1,16 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { AUTH_TOKEN_KEY } from '@/services/api';
+import { authApi, type AuthUser } from '@/services/authApi';
 
 const AUTH_STORAGE_KEY = 'metamind-auth-session';
-
-export interface AuthUser {
-  name: string;
-  email: string;
-  role: string;
-}
 
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
-  signIn: (email: string, password: string, username?: string) => Promise<void>;
+  signIn: (email: string, password: string, username?: string, register?: boolean) => Promise<void>;
   signOut: () => void;
 }
-
-const demoUsers: Array<AuthUser & { password: string }> = [
-  {
-    name: 'Admin',
-    email: 'admin@metamind.ai',
-    password: 'admin123',
-    role: 'Platform Owner',
-  },
-  {
-    name: 'Data Steward',
-    email: 'steward@metamind.ai',
-    password: 'steward123',
-    role: 'Data Steward',
-  },
-];
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -55,31 +36,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       isAuthenticated: Boolean(user),
-      signIn: async (email: string, password: string, username?: string) => {
-        const normalizedEmail = email.trim().toLowerCase();
-        const account = demoUsers.find(
-          (entry) => entry.email.toLowerCase() === normalizedEmail && entry.password === password,
-        );
-
-        if (!account) {
-          throw new Error('Invalid email or password. Try one of the demo accounts.');
-        }
-
-        const session: AuthUser = {
-          name: username?.trim() || account.name,
-          email: account.email,
-          role: account.role,
-        };
-
-        setUser(session);
+      signIn: async (email, password, username, register = false) => {
+        const response = register
+          ? await authApi.register(username?.trim() || '', email, password)
+          : await authApi.login(email, password);
+        setUser(response.user);
         if (typeof window !== 'undefined') {
-          window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+          window.localStorage.setItem(AUTH_TOKEN_KEY, response.access_token);
+          window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(response.user));
         }
       },
       signOut: () => {
         setUser(null);
         if (typeof window !== 'undefined') {
           window.localStorage.removeItem(AUTH_STORAGE_KEY);
+          window.localStorage.removeItem(AUTH_TOKEN_KEY);
         }
       },
     }),

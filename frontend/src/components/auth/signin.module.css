@@ -366,6 +366,21 @@
   overflow: hidden;
 }
 
+.modeToggle {
+  border: 0;
+  background: transparent;
+  color: var(--accent, #5b7cfa);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0.5rem;
+}
+
+.modeToggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .submit::after {
   content: '';
   position: absolute;
