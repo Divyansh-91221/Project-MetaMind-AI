@@ -605,6 +605,41 @@ class EnrichmentService:
         await self._get_run_or_404(run_id)
         return await self.repo.list_issues(run_id)
 
+    async def resolve_issue(
+        self,
+        run_id: uuid.UUID,
+        issue_id: uuid.UUID,
+        *,
+        principal: str,
+        resolution_note: str | None = None,
+    ) -> Any:
+        run = await self._get_run_or_404(run_id)
+        issue = next(
+            (candidate for candidate in await self.repo.list_issues(run.id) if candidate.id == issue_id),
+            None,
+        )
+        if issue is None:
+            raise NotFoundError("Quality issue not found on this run.")
+
+        issue.status = EnrichmentIssueStatus.RESOLVED
+        if resolution_note:
+            issue.evidence = {**(issue.evidence or {}), "resolution_note": resolution_note}
+        await self.session.flush()
+        await self.repo.refresh_counts(run)
+
+        await self.audit.record(
+            AuditAction.ENRICHMENT_REVIEWED,
+            principal=principal,
+            resource_type="enrichment_issue",
+            summary=f"Resolved quality issue on {issue.dataset_name}.{issue.column_name}",
+            payload={
+                "run_id": str(run.id),
+                "issue_id": str(issue.id),
+                "resolution_note": resolution_note,
+            },
+        )
+        return issue
+
     async def _run_metadata_search(
         self, run_id: uuid.UUID, query: str, *, limit: int
     ) -> list[EnrichmentDocumentSearchResult]:

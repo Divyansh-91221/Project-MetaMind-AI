@@ -231,6 +231,22 @@ export function MetadataEnrichment() {
     }
   };
 
+  const resolveIssue = async (issueId: string) => {
+    if (!run) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await enrichmentApi.resolveIssue(run.id, issueId);
+      await refreshMappingsAndIssues(run.id);
+      const updatedRun = await enrichmentApi.status(run.id);
+      setRun(updatedRun);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Issue resolution failed.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const issuesForMapping = (mappingId: string) => issues.filter((i) => i.mapping_id === mappingId);
   const expandedMapping = mappings.find((m) => m.id === expandedId) ?? null;
   const searchSuggestions = Array.from(
@@ -590,7 +606,19 @@ export function MetadataEnrichment() {
                     {issue.explanation}
                   </p>
                 </div>
-                <Badge tone={issue.status === 'OPEN' ? 'warn' : 'ok'}>{issue.status}</Badge>
+                <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+                  <Badge tone={issue.status === 'OPEN' ? 'warn' : 'ok'}>{issue.status}</Badge>
+                  {issue.status === 'OPEN' && (
+                    <button
+                      type="button"
+                      className="button ghost small"
+                      disabled={busy}
+                      onClick={() => void resolveIssue(issue.id)}
+                    >
+                      Resolve
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

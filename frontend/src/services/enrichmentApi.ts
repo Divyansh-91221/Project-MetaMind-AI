@@ -100,6 +100,11 @@ export const enrichmentApi = {
 
   issues: (runId: string) => api.get<EnrichmentIssue[]>(`/enrichment/${runId}/issues`),
 
+  resolveIssue: (runId: string, issueId: string, resolutionNote?: string) =>
+    api.post<EnrichmentIssue>(`/enrichment/${runId}/issues/${issueId}/resolve`, {
+      resolution_note: resolutionNote,
+    }),
+
   review: (
     runId: string,
     payload: {

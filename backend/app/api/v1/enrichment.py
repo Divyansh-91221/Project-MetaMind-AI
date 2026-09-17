@@ -19,6 +19,7 @@ from app.schemas.enrichment import (
     EnrichmentDocumentSearchResult,
     EnrichmentIntegrationResult,
     EnrichmentIssueRead,
+    EnrichmentIssueResolveRequest,
     EnrichmentMappingRead,
     EnrichmentReviewRequest,
     EnrichmentRunRead,
@@ -107,6 +108,28 @@ async def list_issues(
     principal.require(Permission.METADATA_READ)
     issues = await EnrichmentService(session).list_issues(run_id)
     return [EnrichmentIssueRead.model_validate(i) for i in issues]
+
+
+@router.post(
+    "/{run_id}/issues/{issue_id}/resolve",
+    response_model=EnrichmentIssueRead,
+    summary="Resolve an enrichment quality issue",
+)
+async def resolve_issue(
+    run_id: uuid.UUID,
+    issue_id: uuid.UUID,
+    payload: EnrichmentIssueResolveRequest,
+    session: DbSession,
+    principal: CurrentPrincipal,
+) -> EnrichmentIssueRead:
+    principal.require(Permission.METADATA_WRITE)
+    issue = await EnrichmentService(session).resolve_issue(
+        run_id,
+        issue_id,
+        principal=principal.subject,
+        resolution_note=payload.resolution_note,
+    )
+    return EnrichmentIssueRead.model_validate(issue)
 
 
 @router.get(

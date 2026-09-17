@@ -17,12 +17,15 @@ from unittest.mock import AsyncMock
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.constants import DocumentType
+from app.core.constants import DocumentType, EnrichmentIssueStatus
 
 from app.core.exceptions import ValidationError
 from app.schemas.search import DocumentHit
 from app.services.enrichment import file_parsers, validators
-from app.services.enrichment.enrichment_service import EnrichmentService, _find_column
+from app.services.enrichment.enrichment_service import (
+    EnrichmentService,
+    _find_column,
+)
 from app.services.enrichment.matching import (
     LOW_CONFIDENCE_THRESHOLD,
     MappingCandidate,
@@ -300,6 +303,46 @@ class TestEnrichmentDocumentSearch:
         assert results[0].document == "Uploaded metadata columns"
         assert "customer_360.dataset_id" in results[0].excerpt
         assert results[0].source == f"enrichment/{run_id}/structured-metadata"
+
+
+class TestEnrichmentIssueResolution:
+    @pytest.mark.asyncio
+    async def test_resolve_issue_updates_status_and_note(self) -> None:
+        run_id = uuid.uuid4()
+        issue_id = uuid.uuid4()
+        issue = type(
+            "Issue",
+            (),
+            {
+                "id": issue_id,
+                "run_id": run_id,
+                "dataset_name": "customer_360",
+                "column_name": "dataset_id",
+                "status": EnrichmentIssueStatus.OPEN,
+                "evidence": {"source": "validator"},
+            },
+        )()
+        run = type("Run", (), {"id": run_id})()
+        session = type("SessionStub", (), {"flush": AsyncMock()})()
+        service = EnrichmentService(cast(AsyncSession, session))
+        service._get_run_or_404 = AsyncMock(return_value=run)
+        service.repo = type(
+            "RepoStub",
+            (),
+            {
+                "list_issues": AsyncMock(return_value=[issue]),
+                "refresh_counts": AsyncMock(),
+            },
+        )()
+        service.audit = type("AuditStub", (), {"record": AsyncMock()})()
+
+        result = await service.resolve_issue(
+            run_id, issue_id, principal="steward@example.com", resolution_note="Verified with owner."
+        )
+
+        assert result.status is EnrichmentIssueStatus.RESOLVED
+        assert result.evidence["resolution_note"] == "Verified with owner."
+        service.repo.refresh_counts.assert_awaited_once_with(run)
 
 
 class TestValidators:

@@ -95,6 +95,10 @@ class EnrichmentIssueRead(APIModel):
     status: EnrichmentIssueStatus
 
 
+class EnrichmentIssueResolveRequest(APIModel):
+    resolution_note: str | None = None
+
+
 class EnrichmentDocumentSearchResult(APIModel):
     document: str
     source: str

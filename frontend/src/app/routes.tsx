@@ -52,7 +52,7 @@ export const NAV_ITEMS = [
   { to: '/enrichment', label: 'Metadata Enrichment', icon: 'upload-cloud' },
   { to: '/lineage', label: 'Lineage', icon: 'git-branch' },
   { to: '/governance', label: 'Governance', icon: 'shield-check' },
-  { to: '/trust-center', label: 'Trust Center', icon: 'badges' },
+  // Trust Center nav entry hidden intentionally; route/page remain active.
   { to: '/pii-detection', label: 'PII Detection', icon: 'scan-search' },
   { to: '/approvals', label: 'Human Approvals', icon: 'clipboard-check' },
   { to: '/studio', label: 'AI Studio', icon: 'sparkles' },
