@@ -58,7 +58,7 @@ export function MetadataExplorer() {
   ].filter(Boolean) as string[];
 
   return (
-    <>
+    <div className="catalog-workspace">
       <PageHeader
         title={isDiscovery ? 'Discovery Workspace' : 'Catalog Workspace'}
         description={
@@ -73,6 +73,21 @@ export function MetadataExplorer() {
           </div>
         }
       />
+
+      {isDiscovery ? (
+        <Card title="Discovery lens" className="discovery-lens">
+          <div className="row" style={{ justifyContent: 'space-between', gap: 16 }}>
+            <span className="faint small">
+              Start broad, then narrow results by entity type, platform, or search phrase.
+            </span>
+            <div className="row">
+              <Badge tone="accent">Cross-domain</Badge>
+              <Badge tone="accent">Semantic search</Badge>
+              <Badge tone="accent">Relationship-ready</Badge>
+            </div>
+          </div>
+        </Card>
+      ) : null}
 
       <Card className="catalog-toolbar">
         <div className="catalog-toolbar-top">
@@ -185,6 +200,6 @@ export function MetadataExplorer() {
           {(data) => <AssetList items={data.items} />}
         </AsyncBoundary>
       </Card>
-    </>
+    </div>
   );
 }

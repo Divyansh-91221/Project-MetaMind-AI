@@ -40,7 +40,7 @@ export function AssetHeader({ asset }: { asset: MetadataEntityDetail }) {
           Impact
         </Link>
         <Link className="button primary" to={`/copilot?urn=${encoded}`}>
-          Ask Copilot
+          Ask MetaPilot
         </Link>
       </div>
     </div>

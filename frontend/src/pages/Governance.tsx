@@ -16,14 +16,20 @@ const SENSITIVITIES = ['PII', 'PCI', 'FINANCIAL', 'PHI'];
 export function Governance() {
   const [sensitivity, setSensitivity] = useState('PII');
   const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [reviewedAssignments, setReviewedAssignments] = useState<Set<string>>(new Set());
   const sensitive = useApi(() => governanceApi.sensitive(sensitivity, 100), [sensitivity]);
+  const classificationHistory = useApi(() => governanceApi.classificationReviewHistory(50), []);
+  const enrichmentHistory = useApi(() => governanceApi.enrichmentReviewHistory(50), []);
   const unowned = useApi(() => governanceApi.unowned(50), []);
   const review = useApi(() => lineageApi.reviewQueue(25), []);
 
   const sensitivityCount = sensitive.data?.length ?? 0;
   const unownedCount = unowned.data?.length ?? 0;
   const reviewCount = review.data?.length ?? 0;
-  const confirmedCount = (sensitive.data ?? []).filter((row) => row.confirmed).length;
+  const visibleSensitive = (sensitive.data ?? []).filter(
+    (row) => !reviewedAssignments.has(row.assignment_id),
+  );
+  const confirmedCount = visibleSensitive.filter((row) => row.confirmed).length;
 
   const verify = async (edgeId: string, status: 'VERIFIED' | 'REJECTED') => {
     await lineageApi.verify(edgeId, status);
@@ -34,6 +40,7 @@ export function Governance() {
     setReviewingId(assignmentId);
     try {
       await governanceApi.reviewClassification(assignmentId, status);
+      setReviewedAssignments((current) => new Set(current).add(assignmentId));
       sensitive.reload();
     } finally {
       setReviewingId(null);
@@ -90,8 +97,8 @@ export function Governance() {
         }
       >
         <AsyncBoundary {...sensitive} onRetry={sensitive.reload}>
-          {(rows) =>
-            rows.length === 0 ? (
+          {() =>
+            visibleSensitive.length === 0 ? (
               <p className="faint">No assets are classified as {sensitivity}.</p>
             ) : (
               <div className="table-wrap">
@@ -119,7 +126,7 @@ export function Governance() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((row) => (
+                    {visibleSensitive.map((row) => (
                       <tr key={row.assignment_id}>
                         <td className="mono asset-cell">
                           <Link to={`/assets?urn=${encodeURIComponent(row.urn)}`}>
@@ -160,6 +167,74 @@ export function Governance() {
                             </button>
                           </div>
                         </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          }
+        </AsyncBoundary>
+      </Card>
+
+      <Card title="Classification review history">
+        <AsyncBoundary {...classificationHistory} onRetry={classificationHistory.reload}>
+          {(events) =>
+            events.length === 0 ? (
+              <p className="faint">No classification reviews have been recorded yet.</p>
+            ) : (
+              <div className="table-wrap">
+                <table className="table table-fixed classification-history-table">
+                  <thead>
+                    <tr>
+                      <th>Decision</th>
+                      <th>Asset</th>
+                      <th>Summary</th>
+                      <th>Reviewed by</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {events.map((event) => (
+                      <tr key={event.id}>
+                        <td><Badge tone={event.action === 'CLASSIFICATION_CONFIRMED' ? 'ok' : 'error'}>{event.action === 'CLASSIFICATION_CONFIRMED' ? 'Confirmed' : 'Rejected'}</Badge></td>
+                        <td className="mono small">{event.entity_urn ?? '-'}</td>
+                        <td>{event.summary ?? '-'}</td>
+                        <td>{event.principal}</td>
+                        <td className="faint small">{new Date(event.occurred_at).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          }
+        </AsyncBoundary>
+      </Card>
+
+      <Card title="Enrichment approval history">
+        <AsyncBoundary {...enrichmentHistory} onRetry={enrichmentHistory.reload}>
+          {(events) =>
+            events.length === 0 ? (
+              <p className="faint">No enrichment approvals or rejections have been recorded yet.</p>
+            ) : (
+              <div className="table-wrap">
+                <table className="table table-fixed classification-history-table">
+                  <thead>
+                    <tr>
+                      <th>Decision</th>
+                      <th>Mapping</th>
+                      <th>Reviewed by</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {events.map((event) => (
+                      <tr key={event.id}>
+                        <td><Badge tone={event.payload.action === 'approve' ? 'ok' : 'error'}>{event.payload.action === 'approve' ? 'Approved' : 'Rejected'}</Badge></td>
+                        <td>{event.summary ?? event.payload.mapping_id ?? '-'}</td>
+                        <td>{event.principal}</td>
+                        <td className="faint small">{new Date(event.occurred_at).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>

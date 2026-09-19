@@ -21,6 +21,25 @@ export const governanceApi = {
       }>
     >('/governance/sensitive', { sensitivity, limit }),
 
+  classificationReviewHistory: (limit = 50) =>
+    api.get<Array<{
+      id: string;
+      action: 'CLASSIFICATION_CONFIRMED' | 'CLASSIFICATION_REJECTED';
+      occurred_at: string;
+      principal: string;
+      entity_urn?: string | null;
+      summary?: string | null;
+    }>>('/governance/classification-review-history', { limit }),
+
+  enrichmentReviewHistory: (limit = 50) =>
+    api.get<Array<{
+      id: string;
+      occurred_at: string;
+      principal: string;
+      summary?: string | null;
+      payload: { action?: string; run_id?: string; mapping_id?: string };
+    }>>('/governance/enrichment-review-history', { limit }),
+
   reviewClassification: (assignmentId: string, status: 'CONFIRMED' | 'REJECTED') =>
     api.post<{
       assignment_id: string;

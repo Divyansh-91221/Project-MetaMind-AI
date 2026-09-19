@@ -83,6 +83,7 @@ LINEAGE_RELATIONSHIPS: Final[frozenset[RelationshipType]] = frozenset(
         RelationshipType.WRITES_TO,
         RelationshipType.USES,
         RelationshipType.DEFINED_BY,
+        RelationshipType.REFERENCES,
     }
 )
 """Relationships that participate in lineage traversal (``CONTAINS`` is structural)."""

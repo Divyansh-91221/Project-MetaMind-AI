@@ -9,15 +9,21 @@ pre-integration, enrichment-specific questions.
 
 from __future__ import annotations
 
+import json
 import re
+import uuid
 from typing import Any
 
 from app.agents.tools.base import Tool, ToolResult
 from app.repositories.enrichment_repository import EnrichmentRepository
 from app.schemas.copilot import EvidenceItem
+from app.services.enrichment.enrichment_service import EnrichmentService
 
 _REVIEW_KEYWORDS = re.compile(r"\b(review|pending|needs review|approve|approval)\b", re.IGNORECASE)
 _ISSUE_KEYWORDS = re.compile(r"\b(issue|issues|open|problem|conflict|mismatch)\b", re.IGNORECASE)
+_JSON_KEYWORDS = re.compile(
+    r"\b(json|export|mapping|mappings|confidence|enrichment|uploaded|review)\b", re.IGNORECASE
+)
 
 
 class EnrichmentTool(Tool):
@@ -32,11 +38,34 @@ class EnrichmentTool(Tool):
     def __init__(self, session: Any) -> None:
         super().__init__(session)
         self.repo = EnrichmentRepository(session)
+        self.enrichment = EnrichmentService(session)
 
     async def run(self, *, query: str, **_: Any) -> ToolResult:  # type: ignore[override]
         evidence: list[EvidenceItem] = []
+        mappings = await self.repo.search_mappings(query, limit=5)
 
-        for mapping in await self.repo.search_mappings(query, limit=5):
+        # Prioritize the canonical export so it survives the agent's evidence budget.
+        if _JSON_KEYWORDS.search(query):
+            run_ids = {str(mapping.run_id) for mapping in mappings}
+            for run_id in run_ids:
+                export = await self.enrichment.build_export(uuid.UUID(run_id))
+                if export:
+                    evidence.append(
+                        EvidenceItem(
+                            kind="enrichment",
+                            title=f"Enrichment JSON for {export[0]['asset']['dataset']}",
+                            detail=(
+                                f"Canonical enrichment export contains {len(export)} mapping record(s). "
+                                "It includes technical metadata, business mappings, confidence, provenance, review status, and issues. "
+                                f"JSON context: {json.dumps(export, default=str)[:6000]}"
+                            ),
+                            source="enrichment JSON export",
+                            confidence=1.0,
+                            payload={"run_id": run_id, "record_count": len(export), "records": export},
+                        )
+                    )
+
+        for mapping in mappings:
             lines = [
                 f"Column `{mapping.dataset_name}.{mapping.column_name}` "
                 f"({mapping.confidence:.0%} confidence, method={mapping.method}, "

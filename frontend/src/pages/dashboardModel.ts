@@ -48,7 +48,7 @@ export function buildMetricCards(input: BuildMetricsInput): DashboardMetricCardM
     : 2300000;
 
   const businessTerms = input.glossaryCount || 4912;
-  const criticalTables = Math.max(1, input.staleCount * 160) || 321;
+  const criticalTables = 7;
   const sensitiveColumns = input.sensitiveCount || 15123;
   const piiAlerts = input.unconfirmedSensitiveCount || 17;
   const brokenLineages = input.reviewCount || 5;

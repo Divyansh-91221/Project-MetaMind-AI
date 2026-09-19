@@ -12,6 +12,12 @@ import { useAppContext } from '@/app/appContext';
 import { formatAgeHours, formatDate } from '@/utils/format';
 import { buildAssetEvidence } from '@/utils/explainability';
 
+function qualityGrade(status: string): string {
+  if (status === 'PASS') return 'Best';
+  if (status === 'WARN') return 'Better';
+  return status === 'UNKNOWN' ? 'Good' : 'Needs attention';
+}
+
 /** Full asset view: technical metadata, business context, governance and quality. */
 export function AssetDetails() {
   const [params] = useSearchParams();
@@ -100,8 +106,9 @@ export function AssetDetails() {
                                   : 'warn'
                             }
                           >
-                            {profile.overall_status}
+                            {qualityGrade(profile.overall_status)}
                           </Badge>
+                          <span className="faint small">{profile.overall_status}</span>
                           {profile.freshness && (
                             <span className="muted small">
                               Updated {formatAgeHours(profile.freshness.age_hours)}

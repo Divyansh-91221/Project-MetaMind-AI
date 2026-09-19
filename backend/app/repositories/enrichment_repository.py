@@ -7,6 +7,7 @@ never by a hardcoded literal ID - so the organiser's workbook keeps working if I
 from __future__ import annotations
 
 import uuid
+import re
 from typing import Any
 
 from sqlalchemy import func, or_, select
@@ -117,16 +118,30 @@ class EnrichmentRepository:
     # Cross-run search (used by the Copilot tool - a question rarely names a run id)
     # ------------------------------------------------------------------ #
     async def search_mappings(self, query: str, *, limit: int = 5) -> list[EnrichmentMapping]:
-        pattern = f"%{query.lower().strip()}%"
-        stmt = (
-            select(EnrichmentMapping)
-            .where(
-                or_(
+        ignored = {
+            "about", "confidence", "enrichment", "explain", "export", "including",
+            "issue", "issues", "json", "mapping", "mappings", "review", "status",
+            "testing", "the", "uploaded", "with",
+        }
+        terms = [
+            token for token in re.findall(r"[a-z0-9_]+", query.lower())
+            if len(token) >= 3 and token not in ignored
+        ]
+        if not terms:
+            terms = [query.lower().strip()]
+        predicates = []
+        for term in terms:
+            pattern = f"%{term}%"
+            predicates.extend(
+                [
                     func.lower(EnrichmentMapping.column_name).like(pattern),
                     func.lower(EnrichmentMapping.dataset_name).like(pattern),
                     func.lower(func.coalesce(EnrichmentMapping.business_term, "")).like(pattern),
-                )
+                ]
             )
+        stmt = (
+            select(EnrichmentMapping)
+            .where(or_(*predicates))
             .order_by(EnrichmentMapping.updated_at.desc())
             .limit(limit)
         )

@@ -14,13 +14,16 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.connectors.base import RawEntity
+from app.connectors.base import RawEntity, RawLineage
 from app.core.constants import (
     AuditAction,
     EnrichmentMappingStatus,
     EnrichmentStage,
     EntityType,
+    LineageLevel,
+    LineageMethod,
     PlatformType,
+    RelationshipType,
 )
 from app.repositories.audit_repository import AuditRepository
 from app.repositories.enrichment_repository import EnrichmentRepository
@@ -29,6 +32,7 @@ from app.schemas.glossary import BusinessTermCreate, TermAssignmentRequest
 from app.services.enrichment.enrichment_service import EnrichmentService
 from app.services.glossary.glossary_service import GlossaryService
 from app.services.governance.classification_service import ClassificationService
+from app.services.lineage.lineage_service import LineageService
 from app.services.metadata.metadata_service import MetadataService
 from app.services.search.hybrid_search import SearchService
 from app.utils.identifiers import normalize_name
@@ -51,6 +55,11 @@ class EnrichmentIntegrationService:
         mappings = await self.repo.list_mappings(run.id)
         columns = {(c.dataset_name, c.column_name): c for c in await self.repo.list_columns(run.id)}
         platform = normalize_name(run.source_system or "enrichment")
+        dataset_row_counts = {
+            item.get("name"): item.get("row_count")
+            for item in run.structured_summary.get("datasets", [])
+            if item.get("name") and isinstance(item.get("row_count"), int)
+        }
 
         data_source = await self.metadata.repo.upsert_data_source(
             run.source_system or f"enrichment-upload-{run.id}",
@@ -64,6 +73,7 @@ class EnrichmentIntegrationService:
         integrated_urns: list[str] = []
         skipped: list[str] = []
         table_entities: dict[str, Any] = {}
+        integrated_columns: dict[uuid.UUID, Any] = {}
 
         for mapping in mappings:
             if mapping.status is EnrichmentMappingStatus.REJECTED:
@@ -77,6 +87,7 @@ class EnrichmentIntegrationService:
                     qualified_name=mapping.dataset_name,
                     platform=platform,
                     description=run.description,
+                    row_count=dataset_row_counts.get(mapping.dataset_name),
                     tags=["enrichment-upload"],
                     properties={"enrichment_run_id": str(run.id)},
                 )
@@ -120,6 +131,7 @@ class EnrichmentIntegrationService:
             mapping.entity_urn = column_entity.urn
             if column is not None:
                 column.entity_urn = column_entity.urn
+            integrated_columns[mapping.id] = column_entity
 
             if mapping.business_term:
                 # A human-edited mapping may name a term that doesn't exist in the glossary yet -
@@ -147,6 +159,96 @@ class EnrichmentIntegrationService:
             # Reuse the same rule-based classifier every other ingestion path uses, rather than
             # trusting the enrichment heuristic alone - the column now exists as a real entity.
             await self.classification.apply(column_entity, principal=principal)
+
+        # Reuse approved glossary links as lineage evidence: an uploaded customer or revenue
+        # field can then be traced back to the existing enterprise assets that define it.
+        lineage_edges: list[RawLineage] = []
+        integrated_ids = {entity.id for entity in table_entities.values()} | {
+            entity.id for entity in integrated_columns.values()
+        }
+        for mapping in mappings:
+            target_column = integrated_columns.get(mapping.id)
+            if (
+                target_column is None
+                or mapping.status is EnrichmentMappingStatus.REJECTED
+                or not mapping.business_term
+            ):
+                continue
+            term = await self.glossary.repo.get_by_name(mapping.business_term)
+            if term is None:
+                continue
+            for assignment in await self.glossary.repo.assignments_for_term(term.id):
+                source = assignment.entity
+                if source.id in integrated_ids:
+                    continue
+                lineage_edges.append(
+                    RawLineage(
+                        source_urn=source.urn,
+                        target_urn=target_column.urn,
+                        relationship=RelationshipType.DERIVED_FROM,
+                        level=LineageLevel.COLUMN,
+                        method=LineageMethod.AI_INFERRED,
+                        confidence=mapping.confidence,
+                        evidence={
+                            "source": "enrichment_business_mapping",
+                            "run_id": str(run.id),
+                            "business_term": mapping.business_term,
+                            "evidence_excerpt": mapping.evidence_excerpt,
+                        },
+                    )
+                )
+
+        # Add a table-level view of the same relationships for users who start exploration from
+        # the uploaded dataset rather than one of its columns.
+        table_lineage_edges = [
+            RawLineage(
+                source_urn=edge.source_urn,
+                target_urn=table_entities[mapping.dataset_name].urn,
+                relationship=RelationshipType.DERIVED_FROM,
+                level=LineageLevel.TABLE,
+                method=edge.method,
+                confidence=edge.confidence,
+                evidence=edge.evidence,
+            )
+            for mapping, edge in ((mapping, edge) for mapping in mappings for edge in lineage_edges)
+            if mapping.dataset_name in table_entities
+            and edge.evidence.get("business_term") == mapping.business_term
+        ]
+        lineage_edges.extend(table_lineage_edges)
+
+        # Workbook-style uploads describe relationships through named sheets. Preserve those
+        # structural links even when no glossary term was confidently mapped.
+        sheet_relationships = (
+            ("documentation_artifacts", "doc_column_mappings"),
+            ("doc_column_mappings", "columns"),
+            ("datasets", "columns"),
+            ("source_systems", "datasets"),
+        )
+        for source_name, target_name in sheet_relationships:
+            source = table_entities.get(source_name)
+            target = table_entities.get(target_name)
+            if source is None or target is None:
+                continue
+            lineage_edges.append(
+                RawLineage(
+                    source_urn=source.urn,
+                    target_urn=target.urn,
+                    relationship=RelationshipType.REFERENCES,
+                    level=LineageLevel.TABLE,
+                    method=LineageMethod.CONNECTOR_DECLARED,
+                    confidence=0.85,
+                    evidence={
+                        "source": "enrichment_workbook_structure",
+                        "run_id": str(run.id),
+                        "relationship": f"{source_name} references {target_name}",
+                    },
+                )
+            )
+
+        if lineage_edges:
+            await LineageService(self.session).persist_edges(
+                lineage_edges, principal=principal, create_missing_entities=False
+            )
 
         await self.repo.set_stage(run, EnrichmentStage.INTEGRATED)
         await self.session.flush()

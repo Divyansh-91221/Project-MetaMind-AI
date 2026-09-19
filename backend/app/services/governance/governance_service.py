@@ -175,6 +175,41 @@ class GovernanceService:
             for entity, classification, assignment in rows
         ]
 
+    async def classification_review_history(self, *, limit: int = 50) -> list[dict[str, object]]:
+        events = await self.audit_repo.list_events(
+            actions=[AuditAction.CLASSIFICATION_CONFIRMED, AuditAction.CLASSIFICATION_REJECTED],
+            limit=limit,
+        )
+        return [
+            {
+                "id": event.id,
+                "action": event.action.value,
+                "occurred_at": event.occurred_at,
+                "principal": event.principal,
+                "entity_urn": event.entity_urn,
+                "summary": event.summary,
+                "payload": event.payload,
+            }
+            for event in events
+        ]
+
+    async def enrichment_review_history(self, *, limit: int = 50) -> list[dict[str, object]]:
+        events = await self.audit_repo.list_events(
+            action=AuditAction.ENRICHMENT_REVIEWED,
+            limit=limit,
+        )
+        return [
+            {
+                "id": event.id,
+                "occurred_at": event.occurred_at,
+                "principal": event.principal,
+                "summary": event.summary,
+                "payload": event.payload,
+            }
+            for event in events
+            if event.resource_type == "enrichment_mapping"
+        ]
+
     async def review_classification(
         self, assignment_id: uuid.UUID, payload: ClassificationReviewRequest, *, principal: str
     ) -> SensitiveAssetRead:

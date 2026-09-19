@@ -16,7 +16,7 @@ export function Glossary() {
   );
 
   return (
-    <>
+    <div className="business-glossary">
       <PageHeader
         title="Business Glossary"
         description="Governed business definitions, linked to the technical assets that implement them."
@@ -60,6 +60,6 @@ export function Glossary() {
           )}
         </Card>
       </div>
-    </>
+    </div>
   );
 }

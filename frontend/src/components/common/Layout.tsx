@@ -24,6 +24,7 @@ import {
 import { NavLink, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS } from '@/app/routes';
 import { useAuth } from '@/app/authContext';
+import { useTranslation } from '@/i18n/useTranslation';
 
 interface AppNotification {
   id: string;
@@ -37,6 +38,7 @@ interface AppNotification {
 /** Application shell: persistent sidebar navigation plus the routed content area. */
 export function Layout({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -174,11 +176,14 @@ export function Layout({ children }: { children: ReactNode }) {
       <aside className={`sidebar${menuOpen ? ' open' : ''}`}>
         <div className="brand-wrap">
           <div className="brand-mark" aria-hidden>
-            <Sparkles size={16} />
+            <span className="brand-ribbon brand-ribbon-left" />
+            <span className="brand-ribbon brand-ribbon-center" />
+            <span className="brand-ribbon brand-ribbon-right" />
           </div>
           <span className="brand">
-            MetaMind AI
+            <span className="brand-name">MetaMind <span className="brand-ai">AI</span></span>
             <small>Enterprise Intelligence</small>
+            <small className="event-brand">iMobilothon 6.0</small>
           </span>
           <button className="icon-button mobile-only" onClick={() => setMenuOpen(false)}>
             <X size={16} />
@@ -188,6 +193,22 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="sidebar-nav">
           {NAV_ITEMS.map((item) => {
             const Icon = iconMap[item.icon];
+            const navLabelMap: Record<string, string> = {
+              'Dashboard': 'Dashboard',
+              'Discovery': 'Discovery workspace',
+              'Catalog': t('nav.catalog' as any) || 'Catalog',
+              'Lineage': t('nav.lineage' as any) || 'Lineage',
+              'Impact': t('nav.lineage' as any) || 'Impact',
+              'Trust Center': t('nav.quality' as any) || 'Trust Center',
+              'Governance': t('nav.governance' as any) || 'Governance',
+              'Glossary': t('nav.metadata' as any) || 'Glossary',
+              'AI Studio': t('nav.ai_studio' as any) || 'AI Studio',
+              'Ingestion Center': t('nav.metadata' as any) || 'Ingestion Center',
+              'Enrichment': t('nav.enrichment' as any) || 'Enrichment',
+              'MetaPilot': t('nav.ask_metapilot' as any) || 'MetaPilot',
+              'Settings': t('settings.language' as any) || 'Settings',
+            };
+            const displayLabel = navLabelMap[item.label] || item.label;
             return (
               <NavLink
                 key={item.to}
@@ -197,7 +218,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
               >
                 <Icon size={16} className="nav-icon" />
-                {item.label}
+                {displayLabel}
               </NavLink>
             );
           })}
@@ -259,7 +280,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="top-actions">
             <NavLink to="/copilot" className="copilot-cta">
               <Sparkles size={16} />
-              Ask AI Copilot
+              MetaPilot AI
             </NavLink>
             <div className="notification-wrap" ref={notificationRef}>
               <button

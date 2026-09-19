@@ -229,10 +229,15 @@ class EnrichmentService:
             )
 
         columns_summary: list[dict[str, Any]] = []
+        dataset_summary: dict[str, dict[str, int]] = {}
         for table_name, table in tables.items():
             if _sheet_kind(table_name) in {"glossary", "source_systems", "issues", "review", "mappings"}:
                 continue
             technical_dataset_name = table_name if len(tables) > 1 else dataset_name
+            dataset_summary[technical_dataset_name] = {
+                "row_count": len(table.rows),
+                "column_count": len(table.columns),
+            }
             for column in table.columns:
                 unit_hint = None
                 if any(hint in column.name.lower() for hint in _MONEY_HINT):
@@ -262,6 +267,9 @@ class EnrichmentService:
         run.structured_summary = {
             "sheets": list(tables.keys()),
             "columns": columns_summary,
+            "datasets": [
+                {"name": name, **summary} for name, summary in dataset_summary.items()
+            ],
             "documentation_files": [name for name, _ in documentation_files],
             "glossary_terms_discovered": len(glossary_sheet_terms),
             "source_systems_discovered": sorted(source_systems),

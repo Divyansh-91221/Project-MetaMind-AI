@@ -10,7 +10,7 @@ export function AssetList({ items }: { items: MetadataEntity[] }) {
   }
 
   return (
-    <table className="table">
+    <table className="table asset-list-table">
       <thead>
         <tr>
           <th>Asset</th>

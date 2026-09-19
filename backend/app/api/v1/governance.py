@@ -66,6 +66,26 @@ async def sensitive_assets(
     )
 
 
+@router.get("/classification-review-history", summary="Classification review history")
+async def classification_review_history(
+    session: DbSession,
+    principal: CurrentPrincipal,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> list[dict[str, Any]]:
+    principal.require(Permission.METADATA_READ)
+    return await GovernanceService(session).classification_review_history(limit=limit)
+
+
+@router.get("/enrichment-review-history", summary="Enrichment approval history")
+async def enrichment_review_history(
+    session: DbSession,
+    principal: CurrentPrincipal,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> list[dict[str, Any]]:
+    principal.require(Permission.METADATA_READ)
+    return await GovernanceService(session).enrichment_review_history(limit=limit)
+
+
 @router.post(
     "/classifications/{assignment_id}/review",
     response_model=SensitiveAssetRead,

@@ -1,0 +1,5 @@
+14:09:04 INFO    [app.main] (req=-) application_starting
+14:09:04 INFO    [app.graph.neo4j_client] (req=-) graph_store_selected
+14:09:08 WARNING [app.db.session] (req=-) postgres_unavailable
+14:09:08 ERROR   [app.main] (req=-) postgres_unavailable_at_startup
+14:09:08 INFO    [app.ingestion.scheduler] (req=-) ingestion_scheduler_disabled

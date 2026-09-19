@@ -1,0 +1,1041 @@
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/copilot/examples[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/copilot/examples[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/metadata/summary[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/glossary?kpi_only=false&limit=200[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/lineage/review-queue?limit=100[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/governance/unowned?limit=100[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/quality/stale?limit=100[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/connectors/runs?limit=20[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/connectors/sources[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/governance/sensitive?sensitivity=PII&limit=300[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/metadata/summary[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/glossary?kpi_only=false&limit=200[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/lineage/review-queue?limit=100[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/governance/unowned?limit=100[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/quality/stale?limit=100[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/connectors/runs?limit=20[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/connectors/sources[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:17:08 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/governance/sensitive?sensitivity=PII&limit=300[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m7:23:00 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `2444e01e-58d3-4e1a-a8e1-766eb2250aa8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m7:23:00 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `cc3889c2-fbf5-41b2-aff7-aef9f05ae757`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m7:23:00 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `de9b49c6-d701-4323-b1df-493ec7b74e9d`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m7:23:00 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `dbfc3e9f-d690-46aa-9294-935061cce4e8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m7:23:00 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `91767b52-f2ce-4c2c-abb3-b67c400d4ba8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:32:58 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `de9b49c6-d701-4323-b1df-493ec7b74e9d`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:32:58 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `2444e01e-58d3-4e1a-a8e1-766eb2250aa8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:32:58 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `cc3889c2-fbf5-41b2-aff7-aef9f05ae757`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:32:58 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `dbfc3e9f-d690-46aa-9294-935061cce4e8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:32:58 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `91767b52-f2ce-4c2c-abb3-b67c400d4ba8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:38:31 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `2444e01e-58d3-4e1a-a8e1-766eb2250aa8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:38:31 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `cc3889c2-fbf5-41b2-aff7-aef9f05ae757`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:38:31 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `de9b49c6-d701-4323-b1df-493ec7b74e9d`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:38:31 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `dbfc3e9f-d690-46aa-9294-935061cce4e8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:38:31 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `91767b52-f2ce-4c2c-abb3-b67c400d4ba8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:25 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:27 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:27 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:27 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:28 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:30 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:30 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:30 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:31 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:33 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:33 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:33 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:35 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:36 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:36 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:36 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:38 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:39 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:39 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:39 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:41 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:43 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:43 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:53:43 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `customer_data_dictionary.md`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at span
+    at div
+    at section
+    at div
+    at aside
+    at div
+    at MetadataEnrichment (http://127.0.0.1:5173/src/pages/MetadataEnrichment.tsx:58:40)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:56:03 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `de9b49c6-d701-4323-b1df-493ec7b74e9d`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:56:03 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `2444e01e-58d3-4e1a-a8e1-766eb2250aa8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:56:03 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `cc3889c2-fbf5-41b2-aff7-aef9f05ae757`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:56:03 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `dbfc3e9f-d690-46aa-9294-935061cce4e8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+[2m8:56:03 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mWarning: Encountered two children with the same key, `91767b52-f2ce-4c2c-abb3-b67c400d4ba8`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+    at div
+    at EdgeList (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:132:21)
+    at div
+    at LineageGraphView (http://127.0.0.1:5173/src/components/lineage/LineageGraphView.tsx:17:36)
+    at AsyncBoundary (http://127.0.0.1:5173/src/components/common/Feedback.tsx:81:33)
+    at section
+    at Card (http://127.0.0.1:5173/src/components/common/Card.tsx:3:24)
+    at LineageExplorer (http://127.0.0.1:5173/src/pages/LineageExplorer.tsx:14:30)
+    at RenderedRoute (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4156:26)
+    at Routes (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4836:19)
+    at AppRoutes
+    at main
+    at div
+    at div
+    at Layout (http://127.0.0.1:5173/src/components/common/Layout.tsx:11:26)
+    at Shell (http://127.0.0.1:5173/src/app/App.tsx:11:30)
+    at AuthProvider (http://127.0.0.1:5173/src/app/authContext.tsx:22:32)
+    at Router (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:4788:29)
+    at BrowserRouter (http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=8a149609:7234:26)
+    at Providers (http://127.0.0.1:5173/src/app/providers.tsx:13:29)
+    at App
+^C

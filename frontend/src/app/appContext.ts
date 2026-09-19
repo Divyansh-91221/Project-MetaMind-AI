@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
+export type LanguagePreference = 'English' | 'Spanish' | 'German';
 
 export interface AppContextValue {
   /** The asset the user is currently looking at. Passed to the Copilot as page context. */
@@ -8,6 +9,8 @@ export interface AppContextValue {
   setActiveUrn: (urn: string | null) => void;
   theme: ThemePreference;
   setTheme: (theme: ThemePreference) => void;
+  language: LanguagePreference;
+  setLanguage: (language: LanguagePreference) => void;
 }
 
 export const AppContext = createContext<AppContextValue | null>(null);

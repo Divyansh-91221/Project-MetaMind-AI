@@ -337,6 +337,19 @@ class MetadataCopilotAgent:
             )
             plan.append(ToolPlanStep("metadata_lookup", {"urn": urn}, "Best-matching asset."))
 
+        if (
+            re.search(r"\b(json|export|mapping|mappings|confidence|enrichment|uploaded|review)\b", state.query, re.I)
+            or (state.primary_entity and state.primary_entity.platform == "enrichment")
+        ):
+            plan.insert(
+                0,
+                ToolPlanStep(
+                    "enrichment_lookup",
+                    {"query": state.query},
+                    "Use the canonical enrichment records and export context.",
+                )
+            )
+
         state.plan = plan
 
     # ------------------------------------------------------------------ #
@@ -360,7 +373,7 @@ class MetadataCopilotAgent:
             result, trace = await self.tools["catalog_search"].invoke(query=state.query, limit=8)
             state.tool_calls.append(trace)
             state.add_evidence(result.evidence)
-            state.add_warnings(result.warnings)
+            self._add_search_warnings(state, result.warnings)
             used_tools.add("catalog_search")
             result, trace = await self.tools["enrichment_lookup"].invoke(query=state.query)
             state.tool_calls.append(trace)
@@ -374,10 +387,17 @@ class MetadataCopilotAgent:
             result, trace = await self.tools["catalog_search"].invoke(query=state.query, limit=8)
             state.tool_calls.append(trace)
             state.add_evidence(result.evidence)
-            state.add_warnings(result.warnings)
+            self._add_search_warnings(state, result.warnings)
             result, trace = await self.tools["enrichment_lookup"].invoke(query=state.query)
             state.tool_calls.append(trace)
             state.add_evidence(result.evidence)
+
+    @staticmethod
+    def _add_search_warnings(state: AgentState, warnings: list[str]) -> None:
+        """Avoid calling a resolved asset an unresolved raw-question search."""
+        if state.resolved_entities:
+            return
+        state.add_warnings(warnings)
 
     # ------------------------------------------------------------------ #
     # Stage 5 - synthesis

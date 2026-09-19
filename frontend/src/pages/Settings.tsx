@@ -75,15 +75,18 @@ const SERVICES = [
 ] as const;
 
 export function Settings() {
-  const { theme, setTheme } = useAppContext();
+  const { theme, setTheme, language, setLanguage } = useAppContext();
   const [tab, setTab] = useState<TabName>('General');
-  const [form, setForm] = useState<SettingsForm>(DEFAULTS);
+  const [form, setForm] = useState<SettingsForm>(() => ({ ...DEFAULTS, language }));
   const [saved, setSaved] = useState(false);
 
   const dirty = useMemo(() => JSON.stringify(form) !== JSON.stringify(DEFAULTS), [form]);
 
   const update = <K extends keyof SettingsForm>(field: K, value: SettingsForm[K]) => {
     setSaved(false);
+    if (field === 'language') {
+      setLanguage(value as any);
+    }
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
